@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -75,17 +76,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "NyotaCredit — Lighting Your Financial Future" },
       { name: "description", content: "NyotaCredit offers fast, secure loans from KSh 10,000 to KSh 500,000 for Kenyan youth, families, and entrepreneurs. Apply in minutes." },
       { name: "author", content: "NyotaCredit" },
+      // Open Graph
       { property: "og:title", content: "NyotaCredit — Lighting Your Financial Future" },
       { property: "og:description", content: "Premium Kenyan fintech. Fast approval, flexible repayment, trusted nationwide." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: "https://nyotacredit.com/og-image.jpg" },
+      { property: "og:image:width", content: "736" },
+      { property: "og:image:height", content: "736" },
+      { property: "og:image:alt", content: "NyotaCredit — Lighting Your Financial Future" },
+      // Twitter / X card
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@NyotaCredit" },
+      { name: "twitter:title", content: "NyotaCredit — Lighting Your Financial Future" },
+      { name: "twitter:description", content: "Premium Kenyan fintech. Fast approval, flexible repayment, trusted nationwide." },
+      { name: "twitter:image", content: "https://nyotacredit.com/og-image.jpg" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/jpeg", href: "/favicon.jpg" },
+      { rel: "apple-touch-icon", href: "/og-image.jpg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -102,11 +111,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
@@ -116,10 +125,39 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [showDevBadge, setShowDevBadge] = useState(false);
+
+  useEffect(() => {
+    const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const isLocalNetwork = window.location.hostname.startsWith("192.168.") || window.location.hostname.startsWith("10.") || window.location.hostname.startsWith("172.");
+    if (isLocalHost || isLocalNetwork) {
+      setShowDevBadge(true);
+    }
+  }, []);
+
+  const adminUrl = typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8082`
+    : "/admin";
 
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      {showDevBadge && (
+        <div className="fixed bottom-6 right-6 z-[9999] pointer-events-auto">
+          <a
+            href={adminUrl}
+            className="flex items-center gap-2 rounded-full bg-black/90 hover:bg-black border border-green-500/40 hover:border-green-400 text-white px-4 py-2.5 text-xs font-bold shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+            style={{ boxShadow: "0 0 15px rgba(34,197,94,0.25)" }}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span className="text-green-400 font-mono tracking-wider">DEV:</span>
+            <span>Open Admin Dashboard ➜</span>
+          </a>
+        </div>
+      )}
     </QueryClientProvider>
   );
 }

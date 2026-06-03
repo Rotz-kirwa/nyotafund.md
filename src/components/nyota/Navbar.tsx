@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { Logo } from "@/components/nyota/Logo";
 
 const links = [
+  { href: "#home", label: "Home" },
   { href: "#packages", label: "Loans" },
   { href: "#eligibility", label: "Eligibility" },
   { href: "#features", label: "Features" },
@@ -14,6 +16,7 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isLocal, setIsLocal] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -21,6 +24,18 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const isLocalNetwork = window.location.hostname.startsWith("192.168.") || window.location.hostname.startsWith("10.") || window.location.hostname.startsWith("172.");
+    if (isLocalHost || isLocalNetwork) {
+      setIsLocal(true);
+    }
+  }, []);
+
+  const adminUrl = typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8082`
+    : "/admin";
 
   return (
     <motion.header
@@ -38,16 +53,7 @@ export function Navbar() {
           }`}
         >
           <a href="#home" className="flex items-center gap-2 group">
-            <div className="relative h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow">
-              <Sparkles className="h-4 w-4 text-primary-foreground" />
-              <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
-            </div>
-            <div className="leading-tight">
-              <div className="font-display font-bold text-lg text-foreground">
-                Nyota<span className="text-gradient-primary">Credit</span>
-              </div>
-              <div className="text-[10px] text-muted-foreground -mt-0.5">Lighting Your Future</div>
-            </div>
+            <Logo />
           </a>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -55,7 +61,7 @@ export function Navbar() {
               <a
                 key={l.href}
                 href={l.href}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent/60 transition"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 transition duration-200"
               >
                 {l.label}
               </a>
@@ -63,15 +69,23 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2">
+            {isLocal && (
+              <a
+                href={adminUrl}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-green-500/30 text-green-400 bg-green-500/10 px-4 py-2.5 text-xs font-semibold hover:bg-green-500/20 transition-all active:scale-95"
+              >
+                Admin Portal
+              </a>
+            )}
             <a
-              href="#eligibility"
+              href="/apply"
               className="hidden md:inline-flex items-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold shadow-glow hover:shadow-elevated transition-all hover:-translate-y-0.5"
             >
               Apply Now
             </a>
             <button
               onClick={() => setOpen((o) => !o)}
-              className="lg:hidden h-10 w-10 rounded-xl glass grid place-items-center"
+              className="lg:hidden h-10 w-10 rounded-xl glass grid place-items-center text-white"
               aria-label="Toggle menu"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -90,13 +104,22 @@ export function Navbar() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-medium hover:bg-accent/60"
+                className="px-4 py-3 rounded-lg text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 transition duration-200"
               >
                 {l.label}
               </a>
             ))}
+            {isLocal && (
+              <a
+                href={adminUrl}
+                onClick={() => setOpen(false)}
+                className="px-4 py-3 rounded-lg text-sm font-semibold text-green-400 hover:bg-green-500/10 transition duration-200"
+              >
+                Admin Portal
+              </a>
+            )}
             <a
-              href="#eligibility"
+              href="/apply"
               onClick={() => setOpen(false)}
               className="mt-2 text-center rounded-xl bg-gradient-primary text-primary-foreground px-5 py-3 text-sm font-semibold shadow-glow"
             >

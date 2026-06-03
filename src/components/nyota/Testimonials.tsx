@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import a1 from "@/assets/avatar-1.jpg";
@@ -20,6 +20,14 @@ export function Testimonials() {
   const next = () => setI((p) => (p + 1) % items.length);
   const prev = () => setI((p) => (p - 1 + items.length) % items.length);
   const t = items[i];
+  const paused = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!paused.current) setI((p) => (p + 1) % items.length);
+    }, 3000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <section id="testimonials" className="py-24 md:py-32 relative overflow-hidden">
@@ -39,7 +47,11 @@ export function Testimonials() {
           </h2>
         </motion.div>
 
-        <div className="max-w-4xl mx-auto relative">
+        <div
+          className="max-w-4xl mx-auto relative"
+          onMouseEnter={() => { paused.current = true; }}
+          onMouseLeave={() => { paused.current = false; }}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={i}

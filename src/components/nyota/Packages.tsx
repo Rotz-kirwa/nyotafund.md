@@ -3,6 +3,7 @@ import { Sprout, TrendingUp, Briefcase, Crown, Check, ArrowRight } from "lucide-
 
 const packages = [
   {
+    id: "starter",
     name: "Starter",
     icon: Sprout,
     range: "KSh 10,000 – 20,000",
@@ -11,6 +12,7 @@ const packages = [
     featured: false,
   },
   {
+    id: "growth",
     name: "Growth",
     icon: TrendingUp,
     range: "KSh 50,000 – 100,000",
@@ -19,6 +21,7 @@ const packages = [
     featured: true,
   },
   {
+    id: "business-boost",
     name: "Business Boost",
     icon: Briefcase,
     range: "KSh 150,000 – 300,000",
@@ -27,6 +30,7 @@ const packages = [
     featured: false,
   },
   {
+    id: "elite",
     name: "Elite",
     icon: Crown,
     range: "KSh 350,000 – 500,000",
@@ -111,7 +115,7 @@ export function Packages() {
                     </ul>
 
                     <a
-                      href="#eligibility"
+                      href={`/apply?package=${p.id}`}
                       className={`mt-auto inline-flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
                         p.featured
                           ? "bg-gradient-primary text-primary-foreground shadow-glow hover:shadow-elevated"

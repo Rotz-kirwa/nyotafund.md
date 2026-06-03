@@ -34,7 +34,7 @@ export function CtaBanner() {
               Join 50,000+ Kenyans who unlocked their next chapter with NyotaCredit. Approval in minutes — not weeks.
             </p>
             <a
-              href="#eligibility"
+              href="/apply"
               className="mt-8 group inline-flex items-center gap-2 rounded-2xl bg-primary-foreground text-primary px-8 py-4 font-bold shadow-elevated hover:scale-105 transition-transform"
             >
               <span className="absolute inset-0 rounded-2xl animate-pulse-ring" />
