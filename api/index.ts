@@ -140,6 +140,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     const response = await server.fetch(fetchReq);
 
+    // If SSR returned 404 for a GET request, serve SPA index.html fallback so
+    // client-side router can handle the route (helps for strange deep links).
+    if (response.status === 404 && (req.method ?? "GET") === "GET") {
+      console.warn("[SSR] Returned 404 — falling back to static index.html");
+      const served = tryServeStatic(req, res);
+      if (served) return;
+    }
+
     res.statusCode = response.status;
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
