@@ -1,14 +1,18 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { join } from "node:path";
-import { readdirSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 
-// Find the server entry — its hash changes on every build
+// Find the real TanStack SSR entry — it's the LARGEST server-*.js file
+// (our error wrapper is ~2.5kb; the real SSR bundle is ~18kb+)
 function findServerEntry(): string {
   const dir = join(process.cwd(), "dist", "server", "assets");
-  const files = readdirSync(dir);
-  const entry = files.find((f) => f.startsWith("server-") && f.endsWith(".js"));
-  if (!entry) throw new Error(`Server entry not found in ${dir}. Files: ${files.join(", ")}`);
-  return join(dir, entry);
+  const files = readdirSync(dir)
+    .filter((f) => f.startsWith("server-") && f.endsWith(".js"))
+    .map((f) => ({ name: f, size: statSync(join(dir, f)).size }))
+    .sort((a, b) => b.size - a.size); // largest first = real SSR entry
+
+  if (!files.length) throw new Error(`No server-*.js found in ${dir}`);
+  return join(dir, files[0].name);
 }
 
 let handlerCache: { fetch: (req: Request) => Promise<Response> } | null = null;
@@ -16,6 +20,7 @@ let handlerCache: { fetch: (req: Request) => Promise<Response> } | null = null;
 async function getHandler() {
   if (handlerCache) return handlerCache;
   const entryPath = findServerEntry();
+  console.log("[SSR] Loading entry:", entryPath);
   const mod = await import(entryPath);
   handlerCache = (mod.default ?? mod) as { fetch: (req: Request) => Promise<Response> };
   return handlerCache;
@@ -79,6 +84,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     console.error("[SSR handler error]", err);
     res.statusCode = 500;
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.end(`<!doctype html><html><body><h1>Server Error</h1><p>${err instanceof Error ? err.message : String(err)}</p></body></html>`);
+    res.end(`<!doctype html><html><body><h1>Server Error</h1><pre>${err instanceof Error ? err.message : String(err)}</pre></body></html>`);
   }
 }
