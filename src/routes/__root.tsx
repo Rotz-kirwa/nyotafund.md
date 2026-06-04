@@ -76,6 +76,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "NyotaCredit — Lighting Your Financial Future" },
       { name: "description", content: "NyotaCredit offers fast, secure loans from KSh 10,000 to KSh 500,000 for Kenyan youth, families, and entrepreneurs. Apply in minutes." },
       { name: "author", content: "NyotaCredit" },
+      { name: "theme-color", content: "#0a190f" },
+      { name: "color-scheme", content: "light" },
       // Open Graph
       { property: "og:title", content: "NyotaCredit — Lighting Your Financial Future" },
       { property: "og:description", content: "Premium Kenyan fintech. Fast approval, flexible repayment, trusted nationwide." },
@@ -95,11 +97,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/jpeg", href: "/favicon.jpg" },
       { rel: "apple-touch-icon", href: "/og-image.jpg" },
+      // DNS prefetch + preconnect for Google Fonts CDN
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
+      // Load only the weights we actually use; swap prevents FOIT
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),

@@ -113,8 +113,34 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    /* Prevent layout shift from scrollbar appearing */
+    scrollbar-gutter: stable;
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+
+  /* content-visibility: auto defers rendering of off-screen sections — major perf win */
+  section:not(:first-of-type) {
+    content-visibility: auto;
+    /* Reserve estimated height so layout doesn't shift when section renders */
+    contain-intrinsic-size: 0 600px;
+  }
+
+  /* Avoid CLS from images without explicit dimensions */
+  img { max-width: 100%; height: auto; }
+
+  /* Hint browser to composite animations on GPU */
+  .animate-pulse, .animate-spin, .animate-ping, .animate-bounce {
+    will-change: transform, opacity;
+  }
+
+  /* Respect reduced motion system preference */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer utilities {
