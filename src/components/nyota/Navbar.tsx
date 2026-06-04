@@ -18,6 +18,18 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [isLocal, setIsLocal] = useState(false);
 
+  // lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -85,46 +97,66 @@ export function Navbar() {
             </a>
             <button
               onClick={() => setOpen((o) => !o)}
-              className="lg:hidden h-10 w-10 rounded-xl glass grid place-items-center text-white"
+              className="lg:hidden h-10 w-10 rounded-xl glass grid place-items-center text-white ring-1 ring-white/10 hover:scale-105 transition-transform"
               aria-label="Toggle menu"
+              aria-expanded={open}
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
-
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:hidden mt-2 glass rounded-2xl p-4 flex flex-col gap-1 shadow-soft"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-60 lg:hidden flex flex-col bg-black/60 backdrop-blur-sm p-6"
           >
-            {links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 transition duration-200"
-              >
-                {l.label}
+            <div className="flex items-center justify-between">
+              <a href="#home" className="flex items-center gap-2" onClick={() => setOpen(false)}>
+                <Logo />
               </a>
-            ))}
-            {isLocal && (
-              <a
-                href={adminUrl}
+              <button
                 onClick={() => setOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-semibold text-green-400 hover:bg-green-500/10 transition duration-200"
+                className="h-10 w-10 rounded-xl glass grid place-items-center text-white"
+                aria-label="Close menu"
               >
-                Admin Portal
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <nav className="mt-8 flex-1 flex flex-col items-start justify-center gap-4">
+              {links.map((l) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="w-full text-left px-4 py-3 rounded-lg text-lg font-semibold text-white/90 hover:text-white hover:bg-white/10 transition duration-200"
+                >
+                  {l.label}
+                </a>
+              ))}
+            </nav>
+
+            <div className="mt-auto">
+              {isLocal && (
+                <a
+                  href={adminUrl}
+                  onClick={() => setOpen(false)}
+                  className="block mb-3 w-full text-center rounded-lg px-4 py-3 text-sm font-semibold text-green-400 bg-green-500/5 hover:bg-green-500/10"
+                >
+                  Admin Portal
+                </a>
+              )}
+
+              <a
+                href="/apply"
+                onClick={() => setOpen(false)}
+                className="block w-full text-center rounded-xl bg-gradient-primary text-primary-foreground px-5 py-3 text-sm font-semibold shadow-glow"
+              >
+                Apply Now
               </a>
-            )}
-            <a
-              href="/apply"
-              onClick={() => setOpen(false)}
-              className="mt-2 text-center rounded-xl bg-gradient-primary text-primary-foreground px-5 py-3 text-sm font-semibold shadow-glow"
-            >
-              Apply Now
-            </a>
+            </div>
           </motion.div>
         )}
       </div>
