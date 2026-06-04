@@ -8,6 +8,7 @@ import { UsersPage } from "./components/UsersPage";
 import { FinancialAnalytics } from "./components/FinancialAnalytics";
 import { ReconciliationLedger } from "./components/ReconciliationLedger";
 import { GatewaySettings } from "./components/GatewaySettings";
+import { LoginPage } from "./components/LoginPage";
 
 const PAGE_TITLES: Record<AdminPage, { title: string; sub: string }> = {
   overview:  { title: "Overview",   sub: "Platform-wide snapshot" },
@@ -18,11 +19,24 @@ const PAGE_TITLES: Record<AdminPage, { title: string; sub: string }> = {
 };
 
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => sessionStorage.getItem("nyota_admin_auth") === "1"
+  );
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [loading, setLoading]           = useState(true);
   const [reconcilingId, setReconcilingId] = useState<string | null>(null);
   const [activePage, setActivePage]     = useState<AdminPage>("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  function handleLogout() {
+    sessionStorage.removeItem("nyota_admin_auth");
+    setIsAuthenticated(false);
+    setTransactions([]);
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   async function fetchTransactions() {
     setLoading(true);
@@ -78,6 +92,7 @@ export function App() {
         onToggle={() => setSidebarCollapsed((c) => !c)}
         totalTransactions={transactions.length}
         pendingCount={pendingCount}
+        onLogout={handleLogout}
       />
 
       {/* Main content */}

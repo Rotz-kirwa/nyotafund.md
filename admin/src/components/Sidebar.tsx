@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, BarChart3, ClipboardList, Settings, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, ClipboardList, Settings, ChevronLeft, ChevronRight, Zap, LogOut } from "lucide-react";
 import { Logo } from "./Logo";
 
 export type AdminPage = "overview" | "users" | "analytics" | "records" | "settings";
@@ -10,6 +10,7 @@ interface SidebarProps {
   onToggle: () => void;
   totalTransactions: number;
   pendingCount: number;
+  onLogout: () => void;
 }
 
 const NAV_ITEMS: { id: AdminPage; label: string; icon: React.ElementType; badge?: string }[] = [
@@ -20,7 +21,7 @@ const NAV_ITEMS: { id: AdminPage; label: string; icon: React.ElementType; badge?
   { id: "settings",   label: "Settings",       icon: Settings },
 ];
 
-export function Sidebar({ activePage, onNavigate, collapsed, onToggle, totalTransactions, pendingCount }: SidebarProps) {
+export function Sidebar({ activePage, onNavigate, collapsed, onToggle, totalTransactions, pendingCount, onLogout }: SidebarProps) {
   return (
     <aside
       className="relative flex flex-col border-r border-white/5 transition-all duration-300 h-screen sticky top-0"
@@ -90,6 +91,23 @@ export function Sidebar({ activePage, onNavigate, collapsed, onToggle, totalTran
           <div className="text-[10px] text-white/40 mt-0.5">{pendingCount} pending review</div>
         </div>
       )}
+
+      {/* Logout button */}
+      <div className="px-2 pb-2 border-t border-white/5 pt-2">
+        <button
+          onClick={onLogout}
+          title={collapsed ? "Logout" : undefined}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer relative group"
+        >
+          <LogOut size={17} className="flex-shrink-0" />
+          {!collapsed && <span className="truncate">Logout</span>}
+          {collapsed && (
+            <div className="absolute left-full ml-2 px-2 py-1 rounded-lg text-xs font-semibold text-white bg-black/90 border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+              Logout
+            </div>
+          )}
+        </button>
+      </div>
 
       {/* Collapse toggle */}
       <button
