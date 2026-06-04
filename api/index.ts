@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { join } from "node:path";
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync, statSync, existsSync, createReadStream, readFileSync } from "node:fs";
 
 // Find the real TanStack SSR entry — it's the LARGEST server-*.js file
 // (our error wrapper is ~2.5kb; the real SSR bundle is ~18kb+)
@@ -26,6 +26,75 @@ async function getHandler() {
   return handlerCache;
 }
 
+function tryServeStatic(req: IncomingMessage, res: ServerResponse): boolean {
+  try {
+    const protocol = (req.headers["x-forwarded-proto"] as string) ?? "https";
+    const host = (req.headers["x-forwarded-host"] as string) ?? (req.headers["host"] as string) ?? "localhost";
+    const url = new URL(req.url ?? "", `${protocol}://${host}`);
+    let pathname = decodeURIComponent(url.pathname || "/");
+
+    // Normalize root to index.html
+    if (pathname === "/") {
+      const indexPath = join(process.cwd(), "dist", "client", "index.html");
+      if (existsSync(indexPath)) {
+        const content = readFileSync(indexPath, "utf8");
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(content);
+        return true;
+      }
+      return false;
+    }
+
+    // Serve static assets from dist/client
+    const filePath = join(process.cwd(), "dist", "client", pathname);
+    const ext = pathname.split(".").pop()?.toLowerCase();
+    const map: Record<string, string> = {
+      js: "application/javascript; charset=utf-8",
+      css: "text/css; charset=utf-8",
+      html: "text/html; charset=utf-8",
+      json: "application/json; charset=utf-8",
+      svg: "image/svg+xml",
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      webp: "image/webp",
+      ico: "image/x-icon",
+    };
+
+    if (existsSync(filePath) && statSync(filePath).isFile()) {
+      const contentType = (ext && map[ext]) || "application/octet-stream";
+      res.statusCode = 200;
+      res.setHeader("Content-Type", contentType);
+
+      // Add cache headers for hashed assets and images
+      if (pathname.startsWith("/assets/") || ["js", "css", "png", "jpg", "jpeg", "webp", "svg", "ico"].includes(ext ?? "")) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+
+      const stream = createReadStream(filePath);
+      stream.pipe(res);
+      return true;
+    }
+
+    // SPA fallback: if GET and no matching static file, serve index.html so client router can handle the route
+    if ((req.method ?? "GET") === "GET") {
+      const indexPath = join(process.cwd(), "dist", "client", "index.html");
+      if (existsSync(indexPath)) {
+        const content = readFileSync(indexPath, "utf8");
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(content);
+        return true;
+      }
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function readBody(req: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
@@ -37,7 +106,15 @@ function readBody(req: IncomingMessage): Promise<Buffer> {
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
-    const server = await getHandler();
+    let server;
+    try {
+      server = await getHandler();
+    } catch (err) {
+      // If server bundle is missing, try to serve static client files (SPA fallback)
+      const served = tryServeStatic(req, res);
+      if (served) return;
+      throw err;
+    }
 
     const protocol = (req.headers["x-forwarded-proto"] as string) ?? "https";
     const host = (req.headers["x-forwarded-host"] as string) ?? (req.headers["host"] as string) ?? "localhost";
