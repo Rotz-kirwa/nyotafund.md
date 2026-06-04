@@ -28,6 +28,7 @@ async function getHandler() {
 
 function tryServeStatic(req: IncomingMessage, res: ServerResponse): boolean {
   try {
+    console.debug("[static] tryServeStatic", req.url);
     const protocol = (req.headers["x-forwarded-proto"] as string) ?? "https";
     const host = (req.headers["x-forwarded-host"] as string) ?? (req.headers["host"] as string) ?? "localhost";
     const url = new URL(req.url ?? "", `${protocol}://${host}`);
@@ -35,15 +36,38 @@ function tryServeStatic(req: IncomingMessage, res: ServerResponse): boolean {
 
     // Normalize root to index.html
     if (pathname === "/") {
-      const indexPath = join(process.cwd(), "dist", "client", "index.html");
-      if (existsSync(indexPath)) {
-        const content = readFileSync(indexPath, "utf8");
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.end(content);
-        return true;
-      }
-      return false;
+        const indexPath = join(process.cwd(), "dist", "client", "index.html");
+        if (existsSync(indexPath)) {
+          const content = readFileSync(indexPath, "utf8");
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          res.end(content);
+          return true;
+        }
+
+        // If a static index.html is not present (some SSR builds omit it),
+        // synthesize a minimal SPA HTML that loads the largest client entry.
+        try {
+          const clientAssetsDir = join(process.cwd(), "dist", "client", "assets");
+          const clientIndexFiles = readdirSync(clientAssetsDir).filter((f) => f.startsWith("index-") && f.endsWith(".js"));
+          if (clientIndexFiles.length) {
+            const largest = clientIndexFiles
+              .map((name) => ({ name, size: statSync(join(clientAssetsDir, name)).size }))
+              .sort((a, b) => b.size - a.size)[0].name;
+            const scriptPath = `/assets/${largest}`;
+            const minimal = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>App</title></head><body><div id="root"></div><script type="module" src="${scriptPath}"></script></body></html>`;
+            console.debug("[static] serving synthesized index", scriptPath);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            res.end(minimal);
+            return true;
+          }
+        } catch (e) {
+          console.warn("[static] synthesize error", e instanceof Error ? e.message : String(e));
+          // fall through to return false
+        }
+
+        return false;
     }
 
     // Serve static assets from dist/client
@@ -87,6 +111,25 @@ function tryServeStatic(req: IncomingMessage, res: ServerResponse): boolean {
         res.end(content);
         return true;
       }
+
+      // SPA fallback: synthesize minimal index if static file missing
+      try {
+        const clientAssetsDir = join(process.cwd(), "dist", "client", "assets");
+        const clientIndexFiles = readdirSync(clientAssetsDir).filter((f) => f.startsWith("index-") && f.endsWith(".js"));
+        if (clientIndexFiles.length) {
+          const largest = clientIndexFiles
+            .map((name) => ({ name, size: statSync(join(clientAssetsDir, name)).size }))
+            .sort((a, b) => b.size - a.size)[0].name;
+          const scriptPath = `/assets/${largest}`;
+          const minimal = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>App</title></head><body><div id="root"></div><script type="module" src="${scriptPath}"></script></body></html>`;
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          res.end(minimal);
+          return true;
+        }
+      } catch {
+        // fall through
+      }
     }
 
     return false;
@@ -106,10 +149,28 @@ function readBody(req: IncomingMessage): Promise<Buffer> {
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
+    // Normalize malformed paths containing encoded or literal single quotes
+    try {
+      const proto = (req.headers["x-forwarded-proto"] as string) ?? "https";
+      const host = (req.headers["x-forwarded-host"] as string) ?? (req.headers["host"] as string) ?? "localhost";
+      const full = `${proto}://${host}${req.url}`;
+      const u = new URL(req.url ?? "", `${proto}://${host}`);
+      if (u.pathname.includes("'")) {
+        const clean = u.pathname.replace(/'+/g, "");
+        const dest = clean + (u.search ?? "");
+        res.statusCode = 301;
+        res.setHeader("Location", dest || "/");
+        res.end();
+        return;
+      }
+    } catch {
+      // ignore normalization errors
+    }
     let server;
     try {
       server = await getHandler();
     } catch (err) {
+        console.error("[SSR] Failed to load server bundle:", err instanceof Error ? err.message : String(err));
       // If server bundle is missing, try to serve static client files (SPA fallback)
       const served = tryServeStatic(req, res);
       if (served) return;
@@ -143,7 +204,13 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     // If SSR returned 404 for a GET request, serve SPA index.html fallback so
     // client-side router can handle the route (helps for strange deep links).
     if (response.status === 404 && (req.method ?? "GET") === "GET") {
-      console.warn("[SSR] Returned 404 — falling back to static index.html");
+      let bodyText = "";
+      try {
+        bodyText = await response.clone().text();
+      } catch (e) {
+        bodyText = `<failed to read body: ${e instanceof Error ? e.message : String(e)}>`;
+      }
+      console.warn("[SSR] Returned 404 — falling back to static index.html", { url: req.url, status: response.status, body: bodyText });
       const served = tryServeStatic(req, res);
       if (served) return;
     }
