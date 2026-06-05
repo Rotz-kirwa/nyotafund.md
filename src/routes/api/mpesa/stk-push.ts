@@ -20,8 +20,8 @@ export const APIRoute = createAPIFileRoute("/api/mpesa/stk-push")({
         return corsResponse(request, Response.json({ error: "Missing required fields" }, { status: 400 }));
       }
 
-      const appUrl = process.env.APP_URL ?? "https://nyotacredit.co.ke";
-      const callbackUrl = `${appUrl}/api/mpesa/callback`;
+      const appUrl = process.env.APP_URL ?? "https://nyotafund-md.onrender.com";
+      const callbackUrl = `${appUrl.replace(/\/+$/, "")}/api/mpesa/callback`;
 
       // 1. Attempt live M-Pesa STK push
       let checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
