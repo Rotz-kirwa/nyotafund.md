@@ -1,7 +1,9 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { updateTransactionStatus } from "@/lib/db";
+import { corsPreflightResponse, corsResponse } from "@/lib/cors";
 
 export const APIRoute = createAPIFileRoute("/api/mpesa/callback")({
+  OPTIONS: async ({ request }) => corsPreflightResponse(request),
   POST: async ({ request }) => {
     try {
       const body = (await request.json()) as {
@@ -26,10 +28,10 @@ export const APIRoute = createAPIFileRoute("/api/mpesa/callback")({
         console.log(`Transaction ${checkoutRequestId} status updated to ${status}. DB Success: ${updated}`);
       }
 
-      return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
+      return corsResponse(request, Response.json({ ResultCode: 0, ResultDesc: "Accepted" }));
     } catch (err) {
       console.error("Callback error:", err);
-      return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
+      return corsResponse(request, Response.json({ ResultCode: 0, ResultDesc: "Accepted" }));
     }
   },
 });

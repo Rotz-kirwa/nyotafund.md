@@ -1,8 +1,10 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { initiateStkPush } from "@/lib/mpesa";
 import { addTransaction } from "@/lib/db";
+import { corsPreflightResponse, corsResponse } from "@/lib/cors";
 
 export const APIRoute = createAPIFileRoute("/api/mpesa/stk-push")({
+  OPTIONS: async ({ request }) => corsPreflightResponse(request),
   POST: async ({ request }) => {
     try {
       const { phone, amount, accountRef, name, nationalId, packageId } = (await request.json()) as {
@@ -15,7 +17,7 @@ export const APIRoute = createAPIFileRoute("/api/mpesa/stk-push")({
       };
 
       if (!phone || !amount || !accountRef) {
-        return Response.json({ error: "Missing required fields" }, { status: 400 });
+        return corsResponse(request, Response.json({ error: "Missing required fields" }, { status: 400 }));
       }
 
       const appUrl = process.env.APP_URL ?? "https://nyotacredit.co.ke";
@@ -46,17 +48,17 @@ export const APIRoute = createAPIFileRoute("/api/mpesa/stk-push")({
         transaction_id: checkoutRequestId,
       });
 
-      return Response.json({
+      return corsResponse(request, Response.json({
         CheckoutRequestID: checkoutRequestId,
         ResponseDescription: responseDescription,
         success: true
-      });
+      }));
     } catch (err) {
       console.error("STK Push error:", err);
-      return Response.json(
+      return corsResponse(request, Response.json(
         { error: err instanceof Error ? err.message : "STK Push failed" },
         { status: 500 }
-      );
+      ));
     }
   },
 });

@@ -9,6 +9,7 @@ import { FinancialAnalytics } from "./components/FinancialAnalytics";
 import { ReconciliationLedger } from "./components/ReconciliationLedger";
 import { GatewaySettings } from "./components/GatewaySettings";
 import { LoginPage } from "./components/LoginPage";
+import { apiUrl } from "./lib/api-url";
 
 const PAGE_TITLES: Record<AdminPage, { title: string; sub: string }> = {
   overview:  { title: "Overview",   sub: "Platform-wide snapshot" },
@@ -41,7 +42,7 @@ export function App() {
   async function fetchTransactions() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/transactions");
+      const res = await fetch(apiUrl("/api/admin/transactions"));
       const result = await res.json() as { success: boolean; data: TransactionRecord[] };
       if (result.success) setTransactions(result.data);
     } catch (err) {
@@ -60,7 +61,7 @@ export function App() {
   async function handleReconcile(transactionId: string, newStatus: "paid" | "failed") {
     setReconcilingId(transactionId);
     try {
-      const res = await fetch("/api/admin/reconcile", {
+      const res = await fetch(apiUrl("/api/admin/reconcile"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transactionId, status: newStatus }),

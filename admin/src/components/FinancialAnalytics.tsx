@@ -4,6 +4,7 @@ import {
   DollarSign, RefreshCw
 } from "lucide-react";
 import { TransactionRecord } from "@/types";
+import { apiUrl } from "@/lib/api-url";
 
 interface FinancialAnalyticsProps {
   transactions: TransactionRecord[];
@@ -39,7 +40,7 @@ export function FinancialAnalytics({ transactions, onRefresh }: FinancialAnalyti
     if (feeAmount === 1500) packageId = "elite";
 
     try {
-      const res = await fetch("/api/admin/record", {
+      const res = await fetch(apiUrl("/api/admin/record"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

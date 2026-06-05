@@ -7,6 +7,7 @@ import {
   Smartphone, RefreshCw, Star, Wallet, Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/nyota/Logo";
+import { apiUrl } from "@/lib/api-url";
 
 const PKGS = [
   { id: "starter", name: "Starter", Icon: Sprout, range: "KSh 10,000 – 20,000", fee: 100, feeLabel: "KSh 100", color: "#059669", benefits: ["Same-day disbursement", "No collateral", "30-day terms"] },
@@ -37,7 +38,7 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
 
     const poll = setInterval(async () => {
       try {
-        const res = await fetch("/api/mpesa/status", {
+        const res = await fetch(apiUrl("/api/mpesa/status"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ checkoutRequestId: checkoutId }),
@@ -252,7 +253,7 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                         setErrMsg("");
                         setPStatus("sending");
                         try {
-                          const res = await fetch("/api/mpesa/stk-push", {
+                          const res = await fetch(apiUrl("/api/mpesa/stk-push"), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
