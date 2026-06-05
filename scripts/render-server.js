@@ -376,6 +376,25 @@ async function updateTransactionStatus(transactionId, status) {
   return true;
 }
 
+async function getTransactionStatus(transactionId) {
+  if (pool) {
+    try {
+      const res = await pool.query(
+        "SELECT status FROM nyota_transactions WHERE transaction_id = $1 LIMIT 1",
+        [transactionId],
+      );
+      if (res.rows.length > 0) {
+        return res.rows[0].status;
+      }
+    } catch (error) {
+      console.error("DB status lookup error:", error);
+    }
+  }
+
+  const record = mockDatabase.find((tx) => tx.transaction_id === transactionId);
+  return record ? record.status : null;
+}
+
 async function handleApi(req, res, pathname) {
   if (req.method === "OPTIONS") {
     res.writeHead(204, corsHeaders(req));
@@ -441,10 +460,27 @@ async function handleApi(req, res, pathname) {
       sendJson(req, res, 400, { error: "Missing checkoutRequestId" });
       return true;
     }
+
     if (checkoutRequestId.startsWith("MOCK-NC-")) {
+      const status = await getTransactionStatus(checkoutRequestId);
+      if (status === "paid") {
+        sendJson(req, res, 200, {
+          ResultCode: "0",
+          ResultDesc: "Demo transaction approved",
+        });
+        return true;
+      }
+      if (status === "failed") {
+        sendJson(req, res, 200, {
+          ResultCode: "1",
+          ResultDesc: "Payment failed",
+        });
+        return true;
+      }
+
       sendJson(req, res, 200, {
-        ResultCode: "0",
-        ResultDesc: "Demo transaction approved",
+        ResultCode: "1032",
+        ResultDesc: "Awaiting payment confirmation",
       });
       return true;
     }
