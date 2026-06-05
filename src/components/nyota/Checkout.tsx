@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft, ArrowRight, Check, CheckCircle2, Crown,
   Briefcase, TrendingUp, Sprout, Shield, Lock,
-  Smartphone, RefreshCw, Star, Wallet,
+  Smartphone, RefreshCw, Star, Wallet, Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/nyota/Logo";
 
