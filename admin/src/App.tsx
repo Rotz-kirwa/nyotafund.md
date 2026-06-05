@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { TransactionRecord } from "./types";
 import { Sidebar, AdminPage } from "./components/Sidebar";
@@ -80,7 +79,6 @@ export function App() {
   }
 
   const pendingCount = transactions.filter((t) => t.status === "pending").length;
-  const fade = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -12 } };
 
   return (
     <div className="flex min-h-screen text-white" style={{ background: "linear-gradient(135deg,#040d07 0%,#06180c 45%,#050f08 100%)" }}>
@@ -122,59 +120,57 @@ export function App() {
 
         {/* Page content */}
         <main className="flex-1 px-6 py-6 overflow-y-auto">
-          <AnimatePresence mode="wait">
-            {activePage === "overview" && (
-              <motion.div key="overview" {...fade}>
-                <Overview transactions={transactions} />
-              </motion.div>
-            )}
+          {activePage === "overview" && (
+            <div key="overview">
+              <Overview transactions={transactions} />
+            </div>
+          )}
 
-            {activePage === "users" && (
-              <motion.div key="users" {...fade}>
-                <UsersPage
-                  transactions={transactions}
-                  loading={loading}
-                  onReconcile={handleReconcile}
-                  reconcilingId={reconcilingId}
-                />
-              </motion.div>
-            )}
+          {activePage === "users" && (
+            <div key="users">
+              <UsersPage
+                transactions={transactions}
+                loading={loading}
+                onReconcile={handleReconcile}
+                reconcilingId={reconcilingId}
+              />
+            </div>
+          )}
 
-            {activePage === "analytics" && (
-              <motion.div key="analytics" {...fade}>
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">Analytics</h2>
-                  <p className="text-sm text-white/40 mb-6">Financial trends, fee aggregations, and manual recording.</p>
-                </div>
-                <FinancialAnalytics transactions={transactions} onRefresh={fetchTransactions} />
-              </motion.div>
-            )}
+          {activePage === "analytics" && (
+            <div key="analytics">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1">Analytics</h2>
+                <p className="text-sm text-white/40 mb-6">Financial trends, fee aggregations, and manual recording.</p>
+              </div>
+              <FinancialAnalytics transactions={transactions} onRefresh={fetchTransactions} />
+            </div>
+          )}
 
-            {activePage === "records" && (
-              <motion.div key="records" {...fade}>
-                <div className="mb-5">
-                  <h2 className="text-2xl font-bold text-white">Records</h2>
-                  <p className="text-sm text-white/40 mt-0.5">Reconciliation ledger and full audit log.</p>
-                </div>
-                <ReconciliationLedger
-                  transactions={transactions}
-                  loading={loading}
-                  onReconcile={handleReconcile}
-                  reconcilingId={reconcilingId}
-                />
-              </motion.div>
-            )}
+          {activePage === "records" && (
+            <div key="records">
+              <div className="mb-5">
+                <h2 className="text-2xl font-bold text-white">Records</h2>
+                <p className="text-sm text-white/40 mt-0.5">Reconciliation ledger and full audit log.</p>
+              </div>
+              <ReconciliationLedger
+                transactions={transactions}
+                loading={loading}
+                onReconcile={handleReconcile}
+                reconcilingId={reconcilingId}
+              />
+            </div>
+          )}
 
-            {activePage === "settings" && (
-              <motion.div key="settings" {...fade}>
-                <div className="mb-5">
-                  <h2 className="text-2xl font-bold text-white">Settings</h2>
-                  <p className="text-sm text-white/40 mt-0.5">M-Pesa gateway configuration and routing.</p>
-                </div>
-                <GatewaySettings />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {activePage === "settings" && (
+            <div key="settings">
+              <div className="mb-5">
+                <h2 className="text-2xl font-bold text-white">Settings</h2>
+                <p className="text-sm text-white/40 mt-0.5">M-Pesa gateway configuration and routing.</p>
+              </div>
+              <GatewaySettings />
+            </div>
+          )}
         </main>
 
       </div>
