@@ -180,9 +180,138 @@ async function initializeDatabaseSchema() {
       fee_amount NUMERIC(10, 2) NOT NULL,
       status VARCHAR(20) NOT NULL,
       transaction_id VARCHAR(100) UNIQUE NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
     );
+
+    ALTER TABLE nyota_transactions
+      ADD COLUMN IF NOT EXISTS name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS national_id VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS package_id VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS fee_amount NUMERIC(10, 2),
+      ADD COLUMN IF NOT EXISTS status VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS transaction_id VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+    UPDATE nyota_transactions SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL;
+
+    ALTER TABLE nyota_transactions
+      ALTER COLUMN name SET NOT NULL,
+      ALTER COLUMN phone SET NOT NULL,
+      ALTER COLUMN national_id SET NOT NULL,
+      ALTER COLUMN package_id SET NOT NULL,
+      ALTER COLUMN fee_amount SET NOT NULL,
+      ALTER COLUMN status SET NOT NULL,
+      ALTER COLUMN transaction_id SET NOT NULL,
+      ALTER COLUMN created_at SET NOT NULL;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'nyota_transactions_status_check'
+      ) THEN
+        ALTER TABLE nyota_transactions
+          ADD CONSTRAINT nyota_transactions_status_check
+          CHECK (status IN ('pending', 'paid', 'failed'));
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'nyota_transactions_package_id_check'
+      ) THEN
+        ALTER TABLE nyota_transactions
+          ADD CONSTRAINT nyota_transactions_package_id_check
+          CHECK (package_id IN ('starter', 'growth', 'business-boost', 'elite'));
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'nyota_transactions_fee_amount_check'
+      ) THEN
+        ALTER TABLE nyota_transactions
+          ADD CONSTRAINT nyota_transactions_fee_amount_check
+          CHECK (fee_amount > 0);
+      END IF;
+    END $$;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS nyota_transactions_transaction_id_idx
+      ON nyota_transactions (transaction_id);
+    CREATE INDEX IF NOT EXISTS nyota_transactions_created_at_idx
+      ON nyota_transactions (created_at DESC);
+    CREATE INDEX IF NOT EXISTS nyota_transactions_status_idx
+      ON nyota_transactions (status);
+    CREATE INDEX IF NOT EXISTS nyota_transactions_package_id_idx
+      ON nyota_transactions (package_id);
   `);
+}
+
+async function verifyDatabaseSchema() {
+  if (!pool) {
+    return {
+      configured: false,
+      ok: true,
+      mode: "memory-fallback",
+      tables: ["nyota_transactions"],
+    };
+  }
+
+  const columns = await pool.query(`
+    SELECT column_name, data_type, is_nullable, column_default
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'nyota_transactions'
+    ORDER BY ordinal_position
+  `);
+  const constraints = await pool.query(`
+    SELECT conname, contype
+    FROM pg_constraint
+    WHERE conrelid = 'public.nyota_transactions'::regclass
+    ORDER BY conname
+  `);
+  const indexes = await pool.query(`
+    SELECT indexname
+    FROM pg_indexes
+    WHERE schemaname = 'public' AND tablename = 'nyota_transactions'
+    ORDER BY indexname
+  `);
+  const count = await pool.query("SELECT COUNT(*)::int AS total FROM nyota_transactions");
+
+  const requiredColumns = [
+    "id",
+    "name",
+    "phone",
+    "national_id",
+    "package_id",
+    "fee_amount",
+    "status",
+    "transaction_id",
+    "created_at",
+  ];
+  const presentColumns = new Set(columns.rows.map((row) => row.column_name));
+  const presentConstraints = new Set(constraints.rows.map((row) => row.conname));
+  const presentIndexes = new Set(indexes.rows.map((row) => row.indexname));
+  const missingColumns = requiredColumns.filter((column) => !presentColumns.has(column));
+  const missingConstraints = [
+    "nyota_transactions_status_check",
+    "nyota_transactions_package_id_check",
+    "nyota_transactions_fee_amount_check",
+  ].filter((constraint) => !presentConstraints.has(constraint));
+  const missingIndexes = [
+    "nyota_transactions_transaction_id_idx",
+    "nyota_transactions_created_at_idx",
+    "nyota_transactions_status_idx",
+    "nyota_transactions_package_id_idx",
+  ].filter((index) => !presentIndexes.has(index));
+
+  return {
+    configured: true,
+    ok: missingColumns.length === 0 && missingConstraints.length === 0 && missingIndexes.length === 0,
+    tables: ["nyota_transactions"],
+    rowCount: count.rows[0]?.total ?? 0,
+    missingColumns,
+    missingConstraints,
+    missingIndexes,
+    columns: columns.rows,
+    constraints: constraints.rows,
+    indexes: indexes.rows.map((row) => row.indexname),
+  };
 }
 
 async function getAllTransactions() {
@@ -255,7 +384,14 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/health") {
-    sendJson(req, res, 200, { ok: true, service: "nyotafund-md" });
+    const database = await verifyDatabaseSchema();
+    sendJson(req, res, database.ok ? 200 : 500, { ok: database.ok, service: "nyotafund-md", database });
+    return true;
+  }
+
+  if (pathname === "/api/admin/schema" && req.method === "GET") {
+    const database = await verifyDatabaseSchema();
+    sendJson(req, res, database.ok ? 200 : 500, { success: database.ok, database });
     return true;
   }
 
