@@ -61,8 +61,66 @@ export async function initializeDatabaseSchema() {
         fee_amount NUMERIC(10, 2) NOT NULL,
         status VARCHAR(20) NOT NULL,
         transaction_id VARCHAR(100) UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       );
+
+      ALTER TABLE nyota_transactions
+        ADD COLUMN IF NOT EXISTS name VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS national_id VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS package_id VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS fee_amount NUMERIC(10, 2),
+        ADD COLUMN IF NOT EXISTS status VARCHAR(20),
+        ADD COLUMN IF NOT EXISTS transaction_id VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+      UPDATE nyota_transactions SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL;
+
+      ALTER TABLE nyota_transactions
+        ALTER COLUMN name SET NOT NULL,
+        ALTER COLUMN phone SET NOT NULL,
+        ALTER COLUMN national_id SET NOT NULL,
+        ALTER COLUMN package_id SET NOT NULL,
+        ALTER COLUMN fee_amount SET NOT NULL,
+        ALTER COLUMN status SET NOT NULL,
+        ALTER COLUMN transaction_id SET NOT NULL,
+        ALTER COLUMN created_at SET NOT NULL;
+
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'nyota_transactions_status_check'
+        ) THEN
+          ALTER TABLE nyota_transactions
+            ADD CONSTRAINT nyota_transactions_status_check
+            CHECK (status IN ('pending', 'paid', 'failed'));
+        END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'nyota_transactions_package_id_check'
+        ) THEN
+          ALTER TABLE nyota_transactions
+            ADD CONSTRAINT nyota_transactions_package_id_check
+            CHECK (package_id IN ('starter', 'growth', 'business-boost', 'elite'));
+        END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'nyota_transactions_fee_amount_check'
+        ) THEN
+          ALTER TABLE nyota_transactions
+            ADD CONSTRAINT nyota_transactions_fee_amount_check
+            CHECK (fee_amount > 0);
+        END IF;
+      END $$;
+
+      CREATE UNIQUE INDEX IF NOT EXISTS nyota_transactions_transaction_id_idx
+        ON nyota_transactions (transaction_id);
+      CREATE INDEX IF NOT EXISTS nyota_transactions_created_at_idx
+        ON nyota_transactions (created_at DESC);
+      CREATE INDEX IF NOT EXISTS nyota_transactions_status_idx
+        ON nyota_transactions (status);
+      CREATE INDEX IF NOT EXISTS nyota_transactions_package_id_idx
+        ON nyota_transactions (package_id);
     `;
     await pool.query(query);
     console.log("✅ PostgreSQL schema verified/initialized successfully.");
@@ -157,4 +215,23 @@ export async function updateTransactionStatus(transaction_id: string, status: "p
     return true;
   }
   return false;
+}
+
+export async function getTransactionStatus(transaction_id: string): Promise<"pending" | "paid" | "failed" | null> {
+  if (pool) {
+    try {
+      const res = await pool.query(
+        "SELECT status FROM nyota_transactions WHERE transaction_id = $1 LIMIT 1",
+        [transaction_id]
+      );
+      if (res.rows.length > 0) {
+        return res.rows[0].status as "pending" | "paid" | "failed";
+      }
+    } catch (error) {
+      console.error("DB status lookup error:", error);
+    }
+  }
+
+  const tx = mockDatabase.find((t) => t.transaction_id === transaction_id);
+  return tx ? tx.status : null;
 }

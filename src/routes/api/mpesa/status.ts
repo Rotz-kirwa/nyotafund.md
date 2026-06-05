@@ -1,5 +1,6 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { queryStkStatus } from "@/lib/mpesa";
+import { getTransactionStatus } from "@/lib/db";
 import { corsPreflightResponse, corsResponse } from "@/lib/cors";
 
 export const APIRoute = createAPIFileRoute("/api/mpesa/status")({
@@ -13,9 +14,22 @@ export const APIRoute = createAPIFileRoute("/api/mpesa/status")({
         return corsResponse(request, Response.json({ error: "Missing checkoutRequestId" }, { status: 400 }));
       }
       if (checkoutRequestId.startsWith("MOCK-NC-")) {
+        const status = await getTransactionStatus(checkoutRequestId);
+        if (status === "paid") {
+          return corsResponse(request, Response.json({
+            ResultCode: "0",
+            ResultDesc: "Demo transaction approved",
+          }));
+        }
+        if (status === "failed") {
+          return corsResponse(request, Response.json({
+            ResultCode: "1",
+            ResultDesc: "Payment failed",
+          }));
+        }
         return corsResponse(request, Response.json({
-          ResultCode: "0",
-          ResultDesc: "Demo transaction approved",
+          ResultCode: "1032",
+          ResultDesc: "Awaiting payment confirmation",
         }));
       }
       const result = await queryStkStatus(checkoutRequestId);
