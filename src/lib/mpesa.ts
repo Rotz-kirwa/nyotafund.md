@@ -1,6 +1,9 @@
 /** Server-side M-Pesa Daraja API helpers */
 
-const BASE = "https://api.safaricom.co.ke";
+const MPESA_ENV = process.env.MPESA_ENV || "production";
+const BASE = MPESA_ENV === "production"
+  ? "https://api.safaricom.co.ke"
+  : "https://sandbox.safaricom.co.ke";
 
 export function getTimestamp(): string {
   return new Date()
@@ -59,6 +62,8 @@ export async function initiateStkPush(
   const timestamp = getTimestamp();
   const password = getMpesaPassword(timestamp);
   const shortcode = process.env.MPESA_SHORTCODE!;
+  const transactionType = process.env.MPESA_TRANSACTION_TYPE || "CustomerPayBillOnline";
+  const partyB = process.env.MPESA_TILL_NUMBER || shortcode;
 
   const res = await fetch(`${BASE}/mpesa/stkpush/v1/processrequest`, {
     method: "POST",
@@ -70,10 +75,10 @@ export async function initiateStkPush(
       BusinessShortCode: shortcode,
       Password: password,
       Timestamp: timestamp,
-      TransactionType: "CustomerPayBillOnline",
+      TransactionType: transactionType,
       Amount: amount,
       PartyA: formatPhone(phone),
-      PartyB: shortcode,
+      PartyB: partyB,
       PhoneNumber: formatPhone(phone),
       CallBackURL: callbackUrl,
       AccountReference: accountRef,

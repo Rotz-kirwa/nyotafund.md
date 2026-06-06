@@ -26,15 +26,29 @@ export const APIRoute = createAPIFileRoute("/api/mpesa/stk-push")({
       // 1. Attempt live M-Pesa STK push
       let checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       let responseDescription = "STK Push initiated successfully (Demo Mode)";
+      const hasMpesaKeys = process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET && process.env.MPESA_SHORTCODE && process.env.MPESA_PASSKEY;
 
-      try {
-        const result = await initiateStkPush(phone, amount, accountRef, callbackUrl);
-        if (result && result.CheckoutRequestID) {
-          checkoutRequestId = result.CheckoutRequestID;
-          responseDescription = result.ResponseDescription || responseDescription;
+      if (hasMpesaKeys) {
+        try {
+          const result = await initiateStkPush(phone, amount, accountRef, callbackUrl);
+          if (result && result.CheckoutRequestID) {
+            checkoutRequestId = result.CheckoutRequestID;
+            responseDescription = result.ResponseDescription || "STK Push initiated successfully";
+          } else {
+            throw new Error("Invalid response from Safaricom");
+          }
+        } catch (mpesaError) {
+          console.error("M-Pesa STK push failed:", mpesaError);
+          const isProdEnv = process.env.NODE_ENV === "production" || process.env.MPESA_ENV === "production";
+          if (isProdEnv) {
+            return corsResponse(request, Response.json({
+              error: `M-Pesa transaction failed: ${mpesaError instanceof Error ? mpesaError.message : "Internal Gateway Error"}. Please check your phone number and try again.`
+            }, { status: 500 }));
+          } else {
+            checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+            responseDescription = `STK Push failed (${mpesaError instanceof Error ? mpesaError.message : "Error"}). Running demo fallback.`;
+          }
         }
-      } catch (mpesaError) {
-        console.warn("M-Pesa API integration offline or keys missing, running secure demo transaction:", mpesaError);
       }
 
       // 2. Save pending transaction directly in PostgreSQL database

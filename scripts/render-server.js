@@ -5,7 +5,10 @@ import { join, extname } from "node:path";
 import pg from "pg";
 
 const PORT = Number(process.env.PORT || 3000);
-const MPESA_BASE_URL = "https://api.safaricom.co.ke";
+const MPESA_ENV = process.env.MPESA_ENV || "production";
+const MPESA_BASE_URL = MPESA_ENV === "production"
+  ? "https://api.safaricom.co.ke"
+  : "https://sandbox.safaricom.co.ke";
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://nyotacredit.co.ke",
   "https://nyotafund-md.vercel.app",
@@ -115,6 +118,8 @@ async function initiateStkPush(phone, amount, accountRef, callbackUrl) {
   const token = await getMpesaToken();
   const timestamp = getTimestamp();
   const password = base64(`${shortcode}${passkey}${timestamp}`);
+  const transactionType = process.env.MPESA_TRANSACTION_TYPE || "CustomerPayBillOnline";
+  const partyB = process.env.MPESA_TILL_NUMBER || shortcode;
 
   const res = await fetch(`${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`, {
     method: "POST",
@@ -126,10 +131,10 @@ async function initiateStkPush(phone, amount, accountRef, callbackUrl) {
       BusinessShortCode: shortcode,
       Password: password,
       Timestamp: timestamp,
-      TransactionType: "CustomerPayBillOnline",
+      TransactionType: transactionType,
       Amount: amount,
       PartyA: formatPhone(phone),
-      PartyB: shortcode,
+      PartyB: partyB,
       PhoneNumber: formatPhone(phone),
       CallBackURL: callbackUrl,
       AccountReference: accountRef,
@@ -423,17 +428,33 @@ async function handleApi(req, res, pathname) {
 
     const appUrl = process.env.APP_URL || "https://nyotafund-md.onrender.com";
     const callbackUrl = `${appUrl.replace(/\/+$/, "")}/api/mpesa/callback`;
-    let checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    let responseDescription = "STK Push initiated successfully (Demo Mode)";
+    const hasMpesaKeys = process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET && process.env.MPESA_SHORTCODE && process.env.MPESA_PASSKEY;
 
-    try {
-      const result = await initiateStkPush(phone, amount, accountRef, callbackUrl);
-      if (result?.CheckoutRequestID) {
-        checkoutRequestId = result.CheckoutRequestID;
-        responseDescription = result.ResponseDescription || responseDescription;
+    if (hasMpesaKeys) {
+      try {
+        const result = await initiateStkPush(phone, amount, accountRef, callbackUrl);
+        if (result?.CheckoutRequestID) {
+          checkoutRequestId = result.CheckoutRequestID;
+          responseDescription = result.ResponseDescription || "STK Push initiated successfully";
+        } else {
+          throw new Error("Invalid response from Safaricom");
+        }
+      } catch (error) {
+        console.error("M-Pesa STK push failed:", error);
+        const isProdEnv = process.env.NODE_ENV === "production" || process.env.MPESA_ENV === "production";
+        if (isProdEnv) {
+          sendJson(req, res, 500, {
+            error: `M-Pesa transaction failed: ${error instanceof Error ? error.message : "Internal Gateway Error"}. Please check your phone number and try again.`
+          });
+          return true;
+        } else {
+          checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          responseDescription = `STK Push failed (${error instanceof Error ? error.message : "Error"}). Running demo fallback.`;
+        }
       }
-    } catch (error) {
-      console.warn("M-Pesa API unavailable; recording demo transaction:", error);
+    } else {
+      checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      responseDescription = "STK Push initiated successfully (Demo Mode)";
     }
 
     await addTransaction({
