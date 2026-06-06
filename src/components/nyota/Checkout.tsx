@@ -68,10 +68,12 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
   const fade = { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -18 } };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(135deg,#050e07 0%,#091508 50%,#0d1f10 100%)" }}>
-      {/* Blobs */}
-      <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] rounded-full opacity-20 blur-[100px]" style={{ background: "#059669" }} />
-      <div className="absolute -bottom-40 -right-40 w-[35rem] h-[35rem] rounded-full opacity-10 blur-[100px]" style={{ background: "#d97706" }} />
+    <div className="min-h-[100dvh] relative overflow-x-hidden" style={{ background: "linear-gradient(135deg,#050e07 0%,#091508 50%,#0d1f10 100%)" }}>
+      {/* Blobs (Optimized with radial gradients to prevent mobile GPU smearing) */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] max-w-[30rem] max-h-[30rem] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #059669 0%, transparent 70%)" }} />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[90vw] h-[90vw] max-w-[35rem] max-h-[35rem] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #d97706 0%, transparent 70%)" }} />
+      </div>
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5 border-b border-white/5">
