@@ -39,10 +39,8 @@ export function Eligibility() {
     setShowResult(false);
     
     try {
-      // Use local dev port 3000 if not in production, or fallback
-      const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3000/api/eligibility" : "/api/eligibility";
-      
-      const res = await fetch(apiUrl, {
+      const { apiUrl } = await import("@/lib/api-url");
+      const res = await fetch(apiUrl("/api/eligibility"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
