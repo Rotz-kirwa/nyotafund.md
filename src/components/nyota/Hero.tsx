@@ -145,7 +145,7 @@ export function Hero() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
             <a
-              href="/apply"
+              href="/eligibility"
               className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground/15 border border-primary-foreground/30 text-primary-foreground px-7 py-4 font-semibold hover:bg-primary-foreground/25 transition-all"
             >
               <BadgeCheck className="h-4 w-4" />
