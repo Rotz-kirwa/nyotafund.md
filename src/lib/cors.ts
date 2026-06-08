@@ -1,5 +1,6 @@
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://nyotacredit.co.ke",
+  "https://www.nyotacredit.co.ke",
   "https://nyotafund-md.vercel.app",
   "https://nyota-admin.vercel.app",
   "http://localhost:8080",
