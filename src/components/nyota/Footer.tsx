@@ -303,11 +303,11 @@ export function Footer() {
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>Products</h4>
                 <ul className="space-y-2.5 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  {["Check Eligibility", "Apply for a Loan", "Features", "Testimonials", "FAQ"].map((l) => (
-                    <li key={l}>
-                      <a href="#" className="hover:text-white transition-colors flex items-center gap-1 group">
+                  {[{ label: "Check Eligibility", href: "/eligibility" }, { label: "Apply for a Loan", href: "/apply" }, { label: "Features", href: "/#features" }, { label: "Testimonials", href: "/#testimonials" }, { label: "FAQ", href: "/#faq" }].map((l) => (
+                    <li key={l.label}>
+                      <a href={l.href} className="hover:text-white transition-colors flex items-center gap-1 group">
                         <span className="h-px w-0 group-hover:w-3 inline-block transition-all rounded-full" style={{ background: "#22c55e" }} />
-                        {l}
+                        {l.label}
                       </a>
                     </li>
                   ))}

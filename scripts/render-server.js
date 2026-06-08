@@ -245,6 +245,24 @@ async function initializeDatabaseSchema() {
       ON nyota_transactions (status);
     CREATE INDEX IF NOT EXISTS nyota_transactions_package_id_idx
       ON nyota_transactions (package_id);
+
+    CREATE TABLE IF NOT EXISTS nyota_eligibility_checks (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      phone VARCHAR(50) NOT NULL,
+      national_id VARCHAR(50) NOT NULL,
+      income NUMERIC(12, 2) NOT NULL,
+      employment_status VARCHAR(50) NOT NULL,
+      score INTEGER NOT NULL,
+      tier VARCHAR(50) NOT NULL,
+      min_limit NUMERIC(12, 2) NOT NULL,
+      max_limit NUMERIC(12, 2) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS nyota_eligibility_checks_created_at_idx
+      ON nyota_eligibility_checks (created_at DESC);
+    CREATE INDEX IF NOT EXISTS nyota_eligibility_checks_phone_idx
+      ON nyota_eligibility_checks (phone);
   `);
 }
 
@@ -400,6 +418,51 @@ async function getTransactionStatus(transactionId) {
   return record ? record.status : null;
 }
 
+let mockEligibilityChecks = [];
+
+async function saveEligibilityCheck(record) {
+  const newRecord = {
+    ...record,
+    id: mockEligibilityChecks.length + 1,
+    created_at: new Date().toISOString()
+  };
+
+  if (pool) {
+    try {
+      const query = `
+        INSERT INTO nyota_eligibility_checks (name, phone, national_id, income, employment_status, score, tier, min_limit, max_limit)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *
+      `;
+      const values = [
+        record.name,
+        record.phone,
+        record.national_id,
+        record.income,
+        record.employment_status,
+        record.score,
+        record.tier,
+        record.min_limit,
+        record.max_limit
+      ];
+      const res = await pool.query(query, values);
+      const row = res.rows[0];
+      return {
+        ...row,
+        income: parseFloat(row.income),
+        min_limit: parseFloat(row.min_limit),
+        max_limit: parseFloat(row.max_limit),
+        created_at: row.created_at.toISOString(),
+      };
+    } catch (error) {
+      console.error("DB Insert error for eligibility, falling back to memory:", error);
+    }
+  }
+
+  mockEligibilityChecks.unshift(newRecord);
+  return newRecord;
+}
+
 async function handleApi(req, res, pathname) {
   if (req.method === "OPTIONS") {
     res.writeHead(204, corsHeaders(req));
@@ -410,6 +473,72 @@ async function handleApi(req, res, pathname) {
   if (pathname === "/api/health") {
     const database = await verifyDatabaseSchema();
     sendJson(req, res, database.ok ? 200 : 500, { ok: database.ok, service: "nyotafund-md", database });
+    return true;
+  }
+
+  if (pathname === "/api/eligibility" && req.method === "POST") {
+    try {
+      const { name, nationalId, phone, income, employmentStatus } = await readJson(req);
+      if (!name || !nationalId || !phone || !income || !employmentStatus) {
+        sendJson(req, res, 400, { error: "Missing required fields" });
+        return true;
+      }
+
+      let baseScore = 30;
+      if (income >= 200000) baseScore += 45;
+      else if (income >= 100000) baseScore += 35;
+      else if (income >= 50000) baseScore += 25;
+      else if (income >= 20000) baseScore += 15;
+      else baseScore += 5;
+
+      if (employmentStatus === "Employed") baseScore += 20;
+      else if (employmentStatus === "Self-Employed") baseScore += 15;
+
+      const randomFactor = (String(nationalId).length * 3) % 10;
+      let finalScore = Math.min(baseScore + randomFactor, 98);
+
+      let tier = "Tier 1";
+      let min_limit = 10000;
+      let max_limit = 50000;
+      let packageId = "starter";
+
+      if (finalScore >= 75) {
+        tier = "Tier 3";
+        min_limit = 150000;
+        max_limit = 500000;
+        packageId = "elite";
+      } else if (finalScore >= 50) {
+        tier = "Tier 2";
+        min_limit = 50000;
+        max_limit = 150000;
+        packageId = "growth";
+      }
+
+      const record = await saveEligibilityCheck({
+        name,
+        national_id: nationalId,
+        phone,
+        income: Number(income),
+        employment_status: employmentStatus,
+        score: finalScore,
+        tier,
+        min_limit,
+        max_limit,
+      });
+
+      sendJson(req, res, 200, {
+        success: true,
+        score: finalScore,
+        tier,
+        min_limit,
+        max_limit,
+        packageId,
+        recordId: record.id
+      });
+    } catch (err) {
+      console.error("Eligibility check error:", err);
+      sendJson(req, res, 500, { error: "Internal server error" });
+    }
     return true;
   }
 

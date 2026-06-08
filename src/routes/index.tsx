@@ -44,9 +44,6 @@ function Index() {
         <Packages />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
-        <Eligibility />
-      </Suspense>
-      <Suspense fallback={<SectionSkeleton />}>
         <Features />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>

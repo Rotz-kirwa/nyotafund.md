@@ -20,28 +20,53 @@ const STATS = [
 
 export function Eligibility() {
   const [isMounted, setIsMounted]     = useState(false);
-  const [form, setForm]             = useState({ name: "", id: "", phone: "" });
+  const [form, setForm]             = useState({ name: "", id: "", phone: "", income: "", employmentStatus: "Employed" });
   const [showResult, setShowResult] = useState(false);
-  const [score, setScore]           = useState(0);
+  const [loading, setLoading]       = useState(false);
+  const [result, setResult]         = useState<{score: number, tier: string, min_limit: number, max_limit: number, packageId: string} | null>(null);
+  const [errorMsg, setErrorMsg]     = useState("");
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!form.name || !form.id || !form.phone) return;
-    setShowResult(true);
-    setScore(0);
-    const target = 92;
-    const start  = performance.now();
-    const tick   = (now: number) => {
-      const t     = Math.min((now - start) / 1500, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setScore(Math.floor(eased * target));
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    if (!form.name || !form.id || !form.phone || !form.income) return;
+    
+    setLoading(true);
+    setErrorMsg("");
+    setShowResult(false);
+    
+    try {
+      // Use local dev port 3000 if not in production, or fallback
+      const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3000/api/eligibility" : "/api/eligibility";
+      
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          nationalId: form.id,
+          phone: form.phone,
+          income: Number(form.income),
+          employmentStatus: form.employmentStatus
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Eligibility check failed");
+      }
+      
+      setResult(data);
+      setShowResult(true);
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : "Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -78,20 +103,19 @@ export function Eligibility() {
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-6"
                  style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}>
               <Sparkles className="h-3.5 w-3.5" style={{ color: "#f59e0b" }} />
-              Free Eligibility Check
+              Intelligent Eligibility Check
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-white">
               Discover how much<br />
               you qualify for in{" "}
               <span style={{ background: "linear-gradient(90deg,#f59e0b,#fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                60 seconds
+                seconds
               </span>
             </h2>
 
             <p className="mt-5 text-base md:text-lg leading-relaxed max-w-md" style={{ color: "rgba(255,255,255,0.72)" }}>
-              No credit pull. No hidden fees. Get an instant pre-approval and
-              unlock premium loan offers tailored just for you.
+              Our advanced scoring engine analyzes your profile in real-time. No credit pull. No hidden fees. Get an instant pre-approval tailored just for you.
             </p>
 
             {/* perks */}
@@ -172,50 +196,120 @@ export function Eligibility() {
                     </div>
                   </div>
 
+                  {errorMsg && (
+                    <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100 flex items-center gap-2">
+                      <X className="h-4 w-4" /> {errorMsg}
+                    </div>
+                  )}
+
                   {/* fields */}
                   <div className="space-y-4" suppressHydrationWarning>
-                    {[
-                      { k: "name",  l: "Full Name",         p: "e.g. Brian Otieno",  t: "text" },
-                      { k: "id",    l: "National ID Number", p: "e.g. 32145678",      t: "text" },
-                      { k: "phone", l: "Phone Number",       p: "e.g. 0712 345 678",  t: "tel"  },
-                    ].map((f) => (
-                      <div key={f.k} suppressHydrationWarning>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "#374151" }}>
-                          {f.l}
+                          Full Name
                         </label>
                         <input
                           required
-                          type={f.t}
-                          autoComplete="new-password"
-                          data-lpignore="true"
-                          data-1p-ignore="true"
-                          data-form-type="other"
-                          value={form[f.k as keyof typeof form]}
-                          onChange={(e) => setForm({ ...form, [f.k]: e.target.value })}
-                          placeholder={f.p}
+                          type="text"
+                          value={form.name}
+                          onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          placeholder="e.g. Brian Otieno"
                           className="w-full rounded-xl px-4 py-3.5 text-sm outline-none transition"
-                          style={{
-                            border: "1.5px solid #e5e7eb",
-                            background: "#f9fafb",
-                            color: "#111827",
-                          }}
+                          style={{ border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#111827" }}
                           onFocus={(e) => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.15)"; }}
                           onBlur={(e)  => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none"; }}
-                          suppressHydrationWarning
                         />
                       </div>
-                    ))}
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "#374151" }}>
+                          ID Number
+                        </label>
+                        <input
+                          required
+                          type="text"
+                          value={form.id}
+                          onChange={(e) => setForm({ ...form, id: e.target.value })}
+                          placeholder="e.g. 32145678"
+                          className="w-full rounded-xl px-4 py-3.5 text-sm outline-none transition"
+                          style={{ border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#111827" }}
+                          onFocus={(e) => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.15)"; }}
+                          onBlur={(e)  => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none"; }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "#374151" }}>
+                          Phone Number
+                        </label>
+                        <input
+                          required
+                          type="tel"
+                          value={form.phone}
+                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          placeholder="0712 345 678"
+                          className="w-full rounded-xl px-4 py-3.5 text-sm outline-none transition"
+                          style={{ border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#111827" }}
+                          onFocus={(e) => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.15)"; }}
+                          onBlur={(e)  => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none"; }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "#374151" }}>
+                          Monthly Income (KSh)
+                        </label>
+                        <input
+                          required
+                          type="number"
+                          value={form.income}
+                          onChange={(e) => setForm({ ...form, income: e.target.value })}
+                          placeholder="50000"
+                          className="w-full rounded-xl px-4 py-3.5 text-sm outline-none transition"
+                          style={{ border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#111827" }}
+                          onFocus={(e) => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.15)"; }}
+                          onBlur={(e)  => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none"; }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "#374151" }}>
+                        Employment Status
+                      </label>
+                      <select
+                        required
+                        value={form.employmentStatus}
+                        onChange={(e) => setForm({ ...form, employmentStatus: e.target.value })}
+                        className="w-full rounded-xl px-4 py-3.5 text-sm outline-none transition appearance-none"
+                        style={{ border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#111827" }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.15)"; }}
+                        onBlur={(e)  => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none"; }}
+                      >
+                        <option value="Employed">Employed</option>
+                        <option value="Self-Employed">Self-Employed</option>
+                        <option value="Unemployed">Unemployed</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* CTA */}
                   <button
                     type="submit"
-                    className="mt-6 w-full group inline-flex items-center justify-center gap-2 rounded-xl text-white px-5 py-4 font-semibold text-base transition-all hover:-translate-y-0.5"
+                    disabled={loading}
+                    className="mt-6 w-full group inline-flex items-center justify-center gap-2 rounded-xl text-white px-5 py-4 font-semibold text-base transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0"
                     style={{ background: "linear-gradient(135deg,#15803d,#16a34a,#22c55e)", boxShadow: "0 8px 24px rgba(22,163,74,0.4)" }}
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Check My Eligibility
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    {loading ? (
+                      <span className="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Check My Eligibility
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </>
+                    )}
                   </button>
 
                   {/* trust row */}
@@ -278,7 +372,7 @@ export function Eligibility() {
 
       {/* ── Result modal ── */}
       <AnimatePresence>
-        {showResult && (
+        {showResult && result && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -324,22 +418,22 @@ export function Eligibility() {
                   <h3 className="mt-5 text-2xl font-bold text-gray-900">
                     Congratulations{form.name ? `, ${form.name.split(" ")[0]}!` : "!"}
                   </h3>
-                  <p className="mt-1.5 text-sm text-gray-500">You qualify for premium loan offers starting from</p>
+                  <p className="mt-1.5 text-sm text-gray-500">You qualify for a loan limit of</p>
                   <div className="mt-2 text-3xl font-bold font-display"
                        style={{ background: "linear-gradient(90deg,#15803d,#22c55e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    KSh 50,000 – 500,000
+                    KSh {result.min_limit.toLocaleString()} – {result.max_limit.toLocaleString()}
                   </div>
 
                   {/* score bar */}
                   <div className="mt-6 text-left">
                     <div className="flex justify-between text-xs font-semibold mb-2" style={{ color: "#374151" }}>
                       <span>Loan Score</span>
-                      <span style={{ color: "#16a34a" }}>{score}% · Excellent</span>
+                      <span style={{ color: "#16a34a" }}>{result.score}% · {result.score >= 75 ? "Excellent" : result.score >= 50 ? "Good" : "Fair"}</span>
                     </div>
                     <div className="h-3 rounded-full overflow-hidden" style={{ background: "#e5e7eb" }}>
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${score}%` }}
+                        animate={{ width: `${result.score}%` }}
                         transition={{ duration: 1.4, ease: "easeOut" }}
                         className="h-full rounded-full relative"
                         style={{ background: "linear-gradient(90deg,#15803d,#22c55e)" }}
@@ -355,13 +449,13 @@ export function Eligibility() {
                       <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide" style={{ color: "#6b7280" }}>
                         <TrendingUp className="h-3.5 w-3.5" style={{ color: "#16a34a" }} /> Approval
                       </div>
-                      <div className="font-bold text-gray-900 text-lg mt-1">{score}%</div>
+                      <div className="font-bold text-gray-900 text-lg mt-1">{result.score}%</div>
                     </div>
                     <div className="rounded-2xl p-4" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
                       <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide" style={{ color: "#6b7280" }}>
                         <Award className="h-3.5 w-3.5" style={{ color: "#16a34a" }} /> Tier
                       </div>
-                      <div className="font-bold text-gray-900 text-lg mt-1">Elite ⭐</div>
+                      <div className="font-bold text-gray-900 text-lg mt-1">{result.tier} ⭐</div>
                     </div>
                   </div>
 
@@ -369,13 +463,13 @@ export function Eligibility() {
                     "Your financial freedom starts today. Keep dreaming — we've got the funding."
                   </p>
 
-                  <button
-                    onClick={() => setShowResult(false)}
+                  <a
+                    href={`/apply?package=${result.packageId}`}
                     className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl text-white px-5 py-4 font-semibold transition-all hover:-translate-y-0.5"
                     style={{ background: "linear-gradient(135deg,#15803d,#22c55e)", boxShadow: "0 8px 24px rgba(22,163,74,0.4)" }}
                   >
                     Continue Application <ArrowRight className="h-4 w-4" />
-                  </button>
+                  </a>
                 </div>
               </div>
             </motion.div>

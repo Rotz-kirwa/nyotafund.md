@@ -4,13 +4,13 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/nyota/Logo";
 
 const links = [
-  { href: "#home", label: "Home" },
-  { href: "#packages", label: "Loans" },
-  { href: "#eligibility", label: "Eligibility" },
-  { href: "#features", label: "Features" },
-  { href: "#testimonials", label: "Stories" },
-  { href: "#about", label: "About" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#home", label: "Home" },
+  { href: "/#packages", label: "Loans" },
+  { href: "/eligibility", label: "Eligibility" },
+  { href: "/#features", label: "Features" },
+  { href: "/#testimonials", label: "Stories" },
+  { href: "/#about", label: "About" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export function Navbar() {

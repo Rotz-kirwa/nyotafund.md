@@ -121,6 +121,24 @@ export async function initializeDatabaseSchema() {
         ON nyota_transactions (status);
       CREATE INDEX IF NOT EXISTS nyota_transactions_package_id_idx
         ON nyota_transactions (package_id);
+
+      CREATE TABLE IF NOT EXISTS nyota_eligibility_checks (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(50) NOT NULL,
+        national_id VARCHAR(50) NOT NULL,
+        income NUMERIC(12, 2) NOT NULL,
+        employment_status VARCHAR(50) NOT NULL,
+        score INTEGER NOT NULL,
+        tier VARCHAR(50) NOT NULL,
+        min_limit NUMERIC(12, 2) NOT NULL,
+        max_limit NUMERIC(12, 2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS nyota_eligibility_checks_created_at_idx
+        ON nyota_eligibility_checks (created_at DESC);
+      CREATE INDEX IF NOT EXISTS nyota_eligibility_checks_phone_idx
+        ON nyota_eligibility_checks (phone);
     `;
     await pool.query(query);
     console.log("✅ PostgreSQL schema verified/initialized successfully.");
@@ -234,4 +252,63 @@ export async function getTransactionStatus(transaction_id: string): Promise<"pen
 
   const tx = mockDatabase.find((t) => t.transaction_id === transaction_id);
   return tx ? tx.status : null;
+}
+
+export interface EligibilityRecord {
+  id?: number;
+  name: string;
+  phone: string;
+  national_id: string;
+  income: number;
+  employment_status: string;
+  score: number;
+  tier: string;
+  min_limit: number;
+  max_limit: number;
+  created_at?: string;
+}
+
+let mockEligibilityChecks: EligibilityRecord[] = [];
+
+export async function saveEligibilityCheck(record: EligibilityRecord): Promise<EligibilityRecord> {
+  const newRecord = {
+    ...record,
+    id: mockEligibilityChecks.length + 1,
+    created_at: new Date().toISOString()
+  };
+
+  if (pool) {
+    try {
+      const query = `
+        INSERT INTO nyota_eligibility_checks (name, phone, national_id, income, employment_status, score, tier, min_limit, max_limit)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *
+      `;
+      const values = [
+        record.name,
+        record.phone,
+        record.national_id,
+        record.income,
+        record.employment_status,
+        record.score,
+        record.tier,
+        record.min_limit,
+        record.max_limit
+      ];
+      const res = await pool.query(query, values);
+      const row = res.rows[0];
+      return {
+        ...row,
+        income: parseFloat(row.income),
+        min_limit: parseFloat(row.min_limit),
+        max_limit: parseFloat(row.max_limit),
+        created_at: row.created_at.toISOString(),
+      };
+    } catch (error) {
+      console.error("DB Insert error for eligibility, falling back to memory:", error);
+    }
+  }
+
+  mockEligibilityChecks.unshift(newRecord);
+  return newRecord;
 }
