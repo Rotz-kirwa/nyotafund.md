@@ -61,7 +61,7 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div
           className={`flex items-center justify-between rounded-2xl px-4 md:px-6 py-3 transition-all duration-300 ${
-            scrolled ? "glass shadow-soft" : "bg-transparent"
+            scrolled ? "bg-[#0a1a10]/95 backdrop-blur-md border border-white/10 shadow-soft" : "bg-transparent border border-transparent"
           }`}
         >
           <a href="#home" className="flex items-center gap-2 group">
