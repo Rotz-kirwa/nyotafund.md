@@ -65,7 +65,7 @@ export function Navbar() {
           }`}
         >
           <a href="#home" className="flex items-center gap-2 group">
-            <Logo />
+            <Logo dark={true} />
           </a>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -114,7 +114,7 @@ export function Navbar() {
           >
             <div className="flex items-center justify-between">
               <a href="#home" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                <Logo />
+                <Logo dark={true} />
               </a>
               <button
                 onClick={() => setOpen(false)}
