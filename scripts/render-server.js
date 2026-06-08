@@ -430,6 +430,9 @@ async function handleApi(req, res, pathname) {
     const callbackUrl = `${appUrl.replace(/\/+$/, "")}/api/mpesa/callback`;
     const hasMpesaKeys = process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET && process.env.MPESA_SHORTCODE && process.env.MPESA_PASSKEY;
 
+    let checkoutRequestId = `MOCK-NC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    let responseDescription = "STK Push initiated successfully (Demo Mode)";
+
     if (hasMpesaKeys) {
       try {
         const result = await initiateStkPush(phone, amount, accountRef, callbackUrl);
