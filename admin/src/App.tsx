@@ -34,11 +34,8 @@ export function App() {
     setTransactions([]);
   }
 
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
-  }
-
   async function fetchTransactions() {
+    if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await fetch(apiUrl("/api/admin/transactions"));
@@ -52,10 +49,15 @@ export function App() {
   }
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     fetchTransactions();
     const interval = setInterval(fetchTransactions, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   async function handleReconcile(transactionId: string, newStatus: "paid" | "failed") {
     setReconcilingId(transactionId);
