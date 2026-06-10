@@ -16,7 +16,10 @@ export default defineConfig({
     port: 8082,
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        // TanStack Start Vite dev server runs on 5173 (not 3000)
+        // In production the admin SPA is served from Vercel and calls the
+        // main Render backend directly via VITE_API_URL
+        target: "http://localhost:5173",
         changeOrigin: true,
         secure: false,
         ws: true,
