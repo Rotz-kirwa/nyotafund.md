@@ -3,6 +3,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://www.nyotacredit.co.ke",
   "https://nyotafund-md.vercel.app",
   "https://nyota-admin.vercel.app",
+  "http://localhost:3000",
   "http://localhost:8080",
   "http://localhost:8082",
   "http://localhost:5173",
@@ -26,7 +27,7 @@ export function getCorsHeaders(request: Request): HeadersInit {
   const headers: Record<string, string> = {
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization,x-admin-secret",
     "Access-Control-Max-Age": "86400",
   };
 

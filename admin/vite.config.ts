@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 // Standalone Vite configuration for decoupled admin application.
-// Set up to resolve `@/` path alias to `admin/src/` and proxy `/api/*` requests to port 8080.
+// Proxies /api/* requests to the main TanStack Start dev server on port 3000.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -16,7 +16,7 @@ export default defineConfig({
     port: 8082,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
         ws: true,

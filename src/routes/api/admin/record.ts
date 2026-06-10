@@ -1,11 +1,15 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { addTransaction } from "@/lib/db";
 import { corsPreflightResponse, corsResponse } from "@/lib/cors";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 // API Route to record a transaction manually into the back-office database schema
 export const APIRoute = createAPIFileRoute("/api/admin/record")({
   OPTIONS: async ({ request }) => corsPreflightResponse(request),
   POST: async ({ request }) => {
+    const authError = requireAdminAuth(request);
+    if (authError) return corsResponse(request, authError);
+
     try {
       const tx = (await request.json()) as {
         name: string;

@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { Logo } from "./Logo";
-
-const ADMIN_PASSWORD = "nyota@admin2025";
+import { apiUrl } from "@/lib/api-url";
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (token: string) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -14,22 +13,33 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Small delay for UX feel
-    setTimeout(() => {
-      if (password === ADMIN_PASSWORD) {
+    try {
+      const res = await fetch(apiUrl("/api/admin/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await res.json() as { success?: boolean; token?: string; error?: string };
+
+      if (res.ok && data.success && data.token) {
         sessionStorage.setItem("nyota_admin_auth", "1");
-        onLogin();
+        sessionStorage.setItem("nyota_admin_token", data.token);
+        onLogin(data.token);
       } else {
-        setError("Incorrect password. Please try again.");
+        setError(data.error ?? "Incorrect password. Please try again.");
         setPassword("");
       }
+    } catch {
+      setError("Connection error. Is the main server running?");
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   }
 
   return (

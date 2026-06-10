@@ -18,10 +18,28 @@ const PAGE_TITLES: Record<AdminPage, { title: string; sub: string }> = {
   settings:  { title: "Settings",   sub: "Gateway configuration and routing" },
 };
 
+/** Retrieve the admin token stored in sessionStorage after login */
+function getToken(): string {
+  return sessionStorage.getItem("nyota_admin_token") ?? "";
+}
+
+/** Authenticated fetch — attaches the x-admin-secret header */
+async function adminFetch(url: string, options?: RequestInit): Promise<Response> {
+  return fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      "x-admin-secret": getToken(),
+      ...(options?.headers ?? {}),
+    },
+  });
+}
+
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => sessionStorage.getItem("nyota_admin_auth") === "1"
   );
+  const [token, setToken] = useState(() => getToken());
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [loading, setLoading]           = useState(true);
   const [reconcilingId, setReconcilingId] = useState<string | null>(null);
@@ -30,15 +48,27 @@ export function App() {
 
   function handleLogout() {
     sessionStorage.removeItem("nyota_admin_auth");
+    sessionStorage.removeItem("nyota_admin_token");
     setIsAuthenticated(false);
+    setToken("");
     setTransactions([]);
+  }
+
+  function handleLogin(newToken: string) {
+    setToken(newToken);
+    setIsAuthenticated(true);
   }
 
   async function fetchTransactions() {
     if (!isAuthenticated) return;
     setLoading(true);
     try {
-      const res = await fetch(apiUrl("/api/admin/transactions"));
+      const res = await adminFetch(apiUrl("/api/admin/transactions"));
+      if (res.status === 401) {
+        // Token expired or invalid — force re-login
+        handleLogout();
+        return;
+      }
       const result = await res.json() as { success: boolean; data: TransactionRecord[] };
       if (result.success) setTransactions(result.data);
     } catch (err) {
@@ -53,20 +83,20 @@ export function App() {
     fetchTransactions();
     const interval = setInterval(fetchTransactions, 10000);
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   if (!isAuthenticated) {
-    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   async function handleReconcile(transactionId: string, newStatus: "paid" | "failed") {
     setReconcilingId(transactionId);
     try {
-      const res = await fetch(apiUrl("/api/admin/reconcile"), {
+      const res = await adminFetch(apiUrl("/api/admin/reconcile"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transactionId, status: newStatus }),
       });
+      if (res.status === 401) { handleLogout(); return; }
       const data = await res.json() as { success: boolean };
       if (data.success) {
         setTransactions((prev) =>
@@ -145,7 +175,11 @@ export function App() {
                 <h2 className="text-2xl font-bold text-white mb-1">Analytics</h2>
                 <p className="text-sm text-white/40 mb-6">Financial trends, fee aggregations, and manual recording.</p>
               </div>
-              <FinancialAnalytics transactions={transactions} onRefresh={fetchTransactions} />
+              <FinancialAnalytics
+                transactions={transactions}
+                onRefresh={fetchTransactions}
+                adminFetch={adminFetch}
+              />
             </div>
           )}
 

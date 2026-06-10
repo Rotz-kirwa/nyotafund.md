@@ -9,9 +9,10 @@ import { apiUrl } from "@/lib/api-url";
 interface FinancialAnalyticsProps {
   transactions: TransactionRecord[];
   onRefresh: () => Promise<void>;
+  adminFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export function FinancialAnalytics({ transactions, onRefresh }: FinancialAnalyticsProps) {
+export function FinancialAnalytics({ transactions, onRefresh, adminFetch }: FinancialAnalyticsProps) {
   const [timeframe, setTimeframe] = useState<"daily" | "weekly" | "monthly" | "yearly">("daily");
   
   // Highly simplified recording states - only records the processing fee amount
@@ -40,9 +41,8 @@ export function FinancialAnalytics({ transactions, onRefresh }: FinancialAnalyti
     if (feeAmount === 1500) packageId = "elite";
 
     try {
-      const res = await fetch(apiUrl("/api/admin/record"), {
+      const res = await adminFetch(apiUrl("/api/admin/record"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "Processing Fee Collection",
           phone: "0700000000",
