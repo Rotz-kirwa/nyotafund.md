@@ -25,14 +25,13 @@ function getNetworkQuality(): NetworkQuality {
 }
 
 export function useAdaptiveLoading(): AdaptiveConfig {
-  const [config, setConfig] = useState<AdaptiveConfig>(() => {
-    if (typeof window === "undefined") {
-      return { reducedData: false, reducedMotion: false, lightweight: false, quality: "unknown" };
-    }
-    const quality = getNetworkQuality();
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const reducedData = quality === "slow";
-    return { reducedData, reducedMotion, lightweight: reducedData || reducedMotion, quality };
+  // Always start with the SSR-safe default so server and first client render agree.
+  // The real values are read from browser APIs inside useEffect, which only runs client-side.
+  const [config, setConfig] = useState<AdaptiveConfig>({
+    reducedData: false,
+    reducedMotion: false,
+    lightweight: false,
+    quality: "unknown",
   });
 
   useEffect(() => {
@@ -43,6 +42,8 @@ export function useAdaptiveLoading(): AdaptiveConfig {
       const reducedData = quality === "slow";
       setConfig({ reducedData, reducedMotion, lightweight: reducedData || reducedMotion, quality });
     };
+    // Run once immediately after mount to pick up the real client values
+    update();
     motionMq.addEventListener("change", update);
     // @ts-expect-error
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;

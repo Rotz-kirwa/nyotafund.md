@@ -131,18 +131,22 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [showDevBadge, setShowDevBadge] = useState(false);
+  // Always start with a static fallback so SSR and the first client render agree.
+  // The real URL is patched in after hydration inside useEffect.
+  const [adminUrl, setAdminUrl] = useState("/admin");
 
   useEffect(() => {
-    const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const isLocalNetwork = window.location.hostname.startsWith("192.168.") || window.location.hostname.startsWith("10.") || window.location.hostname.startsWith("172.");
+    const hostname = window.location.hostname;
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+    const isLocalNetwork =
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("172.");
     if (isLocalHost || isLocalNetwork) {
+      setAdminUrl(`${window.location.protocol}//${hostname}:8082`);
       setShowDevBadge(true);
     }
   }, []);
-
-  const adminUrl = typeof window !== "undefined"
-    ? `${window.location.protocol}//${window.location.hostname}:8082`
-    : "/admin";
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -17,6 +17,8 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [isLocal, setIsLocal] = useState(false);
+  // Must start as a static string so SSR and first client render agree.
+  const [adminUrl, setAdminUrl] = useState("/admin");
 
   // lock body scroll when mobile menu is open
   useEffect(() => {
@@ -38,16 +40,17 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const isLocalNetwork = window.location.hostname.startsWith("192.168.") || window.location.hostname.startsWith("10.") || window.location.hostname.startsWith("172.");
+    const hostname = window.location.hostname;
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+    const isLocalNetwork =
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("172.");
     if (isLocalHost || isLocalNetwork) {
+      setAdminUrl(`${window.location.protocol}//${hostname}:8082`);
       setIsLocal(true);
     }
   }, []);
-
-  const adminUrl = typeof window !== "undefined"
-    ? `${window.location.protocol}//${window.location.hostname}:8082`
-    : "/admin";
 
   return (
     <motion.header
