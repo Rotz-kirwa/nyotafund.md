@@ -49,7 +49,7 @@ function corsHeaders(req) {
   const headers = {
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization,x-admin-secret",
     "Access-Control-Max-Age": "86400",
   };
 
@@ -470,6 +470,12 @@ async function handleApi(req, res, pathname) {
     return true;
   }
 
+  // Helper: validate x-admin-secret header for protected admin routes
+  function isAdminAuthorized() {
+    const secret = process.env.ADMIN_SECRET ?? "nyota-admin-secret-2025";
+    return req.headers["x-admin-secret"] === secret;
+  }
+
   if (pathname === "/api/health") {
     const database = await verifyDatabaseSchema();
     sendJson(req, res, database.ok ? 200 : 500, { ok: database.ok, service: "nyotafund-md", database });
@@ -653,12 +659,36 @@ async function handleApi(req, res, pathname) {
     return true;
   }
 
+  if (pathname === "/api/admin/login" && req.method === "POST") {
+    try {
+      const { password } = await readJson(req);
+      if (!password) {
+        sendJson(req, res, 400, { error: "Password required" });
+        return true;
+      }
+      const adminPassword = process.env.ADMIN_PASSWORD ?? "nyota-admin-2025";
+      if (password !== adminPassword) {
+        await new Promise((r) => setTimeout(r, 500)); // deter brute-force
+        sendJson(req, res, 401, { error: "Invalid password" });
+        return true;
+      }
+      const secret = process.env.ADMIN_SECRET ?? "nyota-admin-secret-2025";
+      sendJson(req, res, 200, { success: true, token: secret });
+    } catch (err) {
+      console.error("Login error:", err);
+      sendJson(req, res, 500, { error: "Login failed" });
+    }
+    return true;
+  }
+
   if (pathname === "/api/admin/transactions" && req.method === "GET") {
+    if (!isAdminAuthorized()) { sendJson(req, res, 401, { error: "Unauthorized" }); return true; }
     sendJson(req, res, 200, { success: true, data: await getAllTransactions() });
     return true;
   }
 
   if (pathname === "/api/admin/reconcile" && req.method === "POST") {
+    if (!isAdminAuthorized()) { sendJson(req, res, 401, { error: "Unauthorized" }); return true; }
     const { transactionId, status } = await readJson(req);
     if (!transactionId || !status) {
       sendJson(req, res, 400, { error: "Missing transactionId or status" });
@@ -669,6 +699,7 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/admin/record" && req.method === "POST") {
+    if (!isAdminAuthorized()) { sendJson(req, res, 401, { error: "Unauthorized" }); return true; }
     const tx = await readJson(req);
     if (!tx.name || !tx.phone || !tx.national_id || !tx.package_id || !tx.fee_amount || !tx.status || !tx.transaction_id) {
       sendJson(req, res, 400, { error: "Missing required fields" });
@@ -677,6 +708,7 @@ async function handleApi(req, res, pathname) {
     sendJson(req, res, 200, { success: true, data: await addTransaction(tx) });
     return true;
   }
+
 
   if (pathname.startsWith("/api/")) {
     sendJson(req, res, 404, { error: "API route not found" });
