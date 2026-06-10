@@ -60,6 +60,12 @@ export function Eligibility() {
       
       setResult(data);
       setShowResult(true);
+
+      // Track Eligibility Check Success
+      window.ttq?.track("SubmitForm", {
+        content_name: "Eligibility Check",
+        content_category: "Lead Generation",
+      });
     } catch (error) {
       setErrorMsg(error instanceof Error ? error.message : "Network error. Please try again.");
     } finally {

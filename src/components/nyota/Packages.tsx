@@ -151,6 +151,12 @@ export function Packages() {
                     {/* Apply Now — unique gradient per package */}
                     <a
                       href={`/apply?package=${p.id}`}
+                      onClick={() => {
+                        window.ttq?.track("ViewContent", {
+                          content_name: p.name,
+                          content_category: "Loan Package",
+                        });
+                      }}
                       className="mt-auto inline-flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.03] active:scale-95"
                       style={{
                         background: p.btnStyle.background,

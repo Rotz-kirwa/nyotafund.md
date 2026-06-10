@@ -65,6 +65,37 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
     return () => { clearInterval(tick); clearInterval(poll); };
   }, [pStatus, checkoutId]);
 
+  // TikTok Pixel tracking for Checkout stages
+  useEffect(() => {
+    if (step === 1 && pkg) {
+      window.ttq?.track("InitiateCheckout", {
+        content_name: pkg.name,
+        content_category: "Loan Package",
+        value: pkg.fee,
+        currency: "KES",
+      });
+    } else if (step === 2 && pkg) {
+      window.ttq?.track("AddPaymentInfo", {
+        content_name: pkg.name,
+        content_category: "Loan Package",
+        value: pkg.fee,
+        currency: "KES",
+      });
+    }
+  }, [step, pkg]);
+
+  useEffect(() => {
+    if (pStatus === "success" && pkg && checkoutId) {
+      window.ttq?.track("CompletePayment", {
+        content_name: pkg.name,
+        content_category: "Loan Package",
+        value: pkg.fee,
+        currency: "KES",
+        event_id: checkoutId, // For deduplication with server events
+      });
+    }
+  }, [pStatus, pkg, checkoutId]);
+
   const fade = { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -18 } };
 
   return (

@@ -670,7 +670,31 @@ async function handleApi(req, res, pathname) {
     const body = await readJson(req);
     const callback = body?.Body?.stkCallback;
     if (callback?.CheckoutRequestID) {
-      await updateTransactionStatus(callback.CheckoutRequestID, callback.ResultCode === 0 ? "paid" : "failed");
+      const isSuccess = callback.ResultCode === 0;
+      await updateTransactionStatus(callback.CheckoutRequestID, isSuccess ? "paid" : "failed");
+
+      // Server-Side TikTok Events API tracking
+      if (isSuccess && process.env.TIKTOK_ACCESS_TOKEN && process.env.VITE_TIKTOK_PIXEL_ID) {
+        try {
+          fetch("https://business-api.tiktok.com/open_api/v1.3/pixel/track/", {
+            method: "POST",
+            headers: {
+              "Access-Token": process.env.TIKTOK_ACCESS_TOKEN,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              pixel_code: process.env.VITE_TIKTOK_PIXEL_ID,
+              event: "CompletePayment",
+              event_id: callback.CheckoutRequestID, // Deduplicates with frontend event
+              context: {
+                page: { url: "https://nyotafund-md.onrender.com/apply" },
+              },
+            }),
+          }).catch((err) => console.error("TikTok Events API non-fatal error:", err.message));
+        } catch (err) {
+          console.error("Failed to send TikTok Event:", err);
+        }
+      }
     }
     sendJson(req, res, 200, { ResultCode: 0, ResultDesc: "Accepted" });
     return true;
