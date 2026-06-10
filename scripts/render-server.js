@@ -1,8 +1,25 @@
 #!/usr/bin/env node
+// Load .env first so all process.env values are available in local dev.
+// On Render/production, environment variables are injected directly — dotenv is a no-op.
+import { readFileSync, existsSync } from "node:fs";
+const envPath = new URL("../.env", import.meta.url).pathname;
+if (existsSync(envPath)) {
+  readFileSync(envPath, "utf8")
+    .split("\n")
+    .filter((line) => line && !line.startsWith("#") && line.includes("="))
+    .forEach((line) => {
+      const eqIdx = line.indexOf("=");
+      const key = line.slice(0, eqIdx).trim();
+      const value = line.slice(eqIdx + 1).trim();
+      if (key && !(key in process.env)) process.env[key] = value;
+    });
+}
+
 import http from "node:http";
-import { createReadStream, existsSync, readdirSync, statSync } from "node:fs";
+import { createReadStream, readdirSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import pg from "pg";
+
 
 const PORT = Number(process.env.PORT || 3000);
 const MPESA_ENV = process.env.MPESA_ENV || "production";
