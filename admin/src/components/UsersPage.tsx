@@ -301,7 +301,7 @@ export function UsersPage({ transactions, loading, onReconcile, reconcilingId }:
               </div>
               <button onClick={() => setSelected(null)} className="ml-auto text-white/40 hover:text-white cursor-pointer">✕</button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
               {[
                 { l: "Phone",          v: selected.phone },
                 { l: "National ID",    v: selected.national_id },

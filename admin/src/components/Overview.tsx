@@ -57,7 +57,7 @@ export function Overview({ transactions }: OverviewProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-2xl p-5 border border-white/5 bg-white/[0.02] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-5 blur-2xl pointer-events-none" style={{ background: s.color }} />

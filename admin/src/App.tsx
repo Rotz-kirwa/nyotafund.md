@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Menu } from "lucide-react";
 import { TransactionRecord } from "./types";
 import { Sidebar, AdminPage } from "./components/Sidebar";
 import { Overview } from "./components/Overview";
@@ -45,6 +45,7 @@ export function App() {
   const [reconcilingId, setReconcilingId] = useState<string | null>(null);
   const [activePage, setActivePage]     = useState<AdminPage>("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen]             = useState(false);
 
   function handleLogout() {
     sessionStorage.removeItem("nyota_admin_auth");
@@ -118,22 +119,35 @@ export function App() {
       {/* Sidebar */}
       <Sidebar
         activePage={activePage}
-        onNavigate={setActivePage}
+        onNavigate={(page) => {
+          setActivePage(page);
+          setMobileOpen(false); // Close mobile sidebar on navigation
+        }}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed((c) => !c)}
         totalTransactions={transactions.length}
         pendingCount={pendingCount}
         onLogout={handleLogout}
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
       />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/20 backdrop-blur-md">
-          <div>
-            <h1 className="text-lg font-bold text-white">{PAGE_TITLES[activePage].title}</h1>
-            <p className="text-xs text-white/40">{PAGE_TITLES[activePage].sub}</p>
+        <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/5 bg-black/20 backdrop-blur-md">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button 
+              className="md:hidden p-1.5 -ml-1.5 text-white/70 hover:text-white cursor-pointer"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu size={22} />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold text-white">{PAGE_TITLES[activePage].title}</h1>
+              <p className="text-xs text-white/40 hidden sm:block">{PAGE_TITLES[activePage].sub}</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {/* Live indicator */}
