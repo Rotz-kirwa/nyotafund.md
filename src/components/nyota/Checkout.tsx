@@ -189,7 +189,30 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                       />
                     </div>
                   ))}
-                  <div className="flex gap-3 mt-6">
+                  {/* ── Fee Disclosure Notice ── */}
+                  <div
+                    className="mt-6 mb-2 rounded-2xl p-4 border text-sm leading-relaxed"
+                    style={{
+                      background: "rgba(245,158,11,0.07)",
+                      borderColor: "rgba(245,158,11,0.25)",
+                    }}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <Shield size={15} className="mt-0.5 shrink-0" style={{ color: "#f59e0b" }} />
+                      <p style={{ color: "rgba(255,255,255,0.65)" }}>
+                        A processing and account activation fee of{" "}
+                        <span className="font-bold" style={{ color: "#f59e0b" }}>{pkg.feeLabel}</span>{" "}
+                        will be required to facilitate application review, verification, onboarding,
+                        and loan processing. This fee is{" "}
+                        <span className="font-semibold text-white">fully refundable</span>{" "}
+                        upon successful completion of the application process and is{" "}
+                        <span className="font-semibold text-white">not deducted</span>{" "}
+                        from your approved loan amount.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-4">
                     <button type="button" onClick={() => setStep(0)}
                       className="flex items-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white/60 transition-all hover:text-white"
                       style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -226,7 +249,31 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
 
                 {pStatus === "idle" && (
                   <motion.div {...fade}>
+                    {/* ── Fee Disclosure Notice ── */}
+                    <div
+                      className="rounded-2xl p-4 mb-5 border text-sm leading-relaxed"
+                      style={{
+                        background: "rgba(245,158,11,0.07)",
+                        borderColor: "rgba(245,158,11,0.25)",
+                      }}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <Shield size={15} className="mt-0.5 shrink-0" style={{ color: "#f59e0b" }} />
+                        <p style={{ color: "rgba(255,255,255,0.65)" }}>
+                          A processing and account activation fee of{" "}
+                          <span className="font-bold" style={{ color: "#f59e0b" }}>{pkg.feeLabel}</span>{" "}
+                          will be required to facilitate application review, verification, onboarding,
+                          and loan processing. This fee is{" "}
+                          <span className="font-semibold text-white">fully refundable</span>{" "}
+                          upon successful completion of the application process and is{" "}
+                          <span className="font-semibold text-white">not deducted</span>{" "}
+                          from your approved loan amount.
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="rounded-xl p-4 mb-6 border border-white/8" style={{ background: "rgba(255,255,255,0.04)" }}>
+
                       <div className="text-xs text-white/40 mb-1">Sending STK Push to</div>
                       <div className="font-semibold text-white flex items-center gap-2">
                         <Smartphone size={14} color="#10b981" /> {form.phone || "07XX XXX XXX"}
