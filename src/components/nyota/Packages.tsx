@@ -10,6 +10,14 @@ const packages = [
     fee: "KSh 100",
     benefits: ["Same-day disbursement", "No collateral", "Flexible 30-day terms"],
     featured: false,
+    // Sky blue
+    btnStyle: {
+      background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
+      shadow: "0 8px 24px rgba(14,165,233,0.35)",
+      hoverShadow: "0 12px 32px rgba(14,165,233,0.55)",
+      iconBg: "linear-gradient(135deg, #0ea5e9, #2563eb)",
+      checkColor: "#0ea5e9",
+    },
   },
   {
     id: "growth",
@@ -19,6 +27,14 @@ const packages = [
     fee: "KSh 300",
     benefits: ["Priority approval", "Build credit score", "Repay up to 6 months"],
     featured: true,
+    // Brand green
+    btnStyle: {
+      background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+      shadow: "0 8px 24px rgba(34,197,94,0.35)",
+      hoverShadow: "0 12px 32px rgba(34,197,94,0.55)",
+      iconBg: "linear-gradient(135deg, #22c55e, #16a34a)",
+      checkColor: "#22c55e",
+    },
   },
   {
     id: "business-boost",
@@ -28,6 +44,14 @@ const packages = [
     fee: "KSh 700",
     benefits: ["Dedicated advisor", "Working capital ready", "12-month repayment"],
     featured: false,
+    // Amber orange
+    btnStyle: {
+      background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)",
+      shadow: "0 8px 24px rgba(245,158,11,0.35)",
+      hoverShadow: "0 12px 32px rgba(245,158,11,0.55)",
+      iconBg: "linear-gradient(135deg, #f59e0b, #ea580c)",
+      checkColor: "#f59e0b",
+    },
   },
   {
     id: "elite",
@@ -37,6 +61,14 @@ const packages = [
     fee: "KSh 1,500",
     benefits: ["VIP processing", "Lowest interest rates", "24-month repayment"],
     featured: false,
+    // Violet purple
+    btnStyle: {
+      background: "linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)",
+      shadow: "0 8px 24px rgba(168,85,247,0.35)",
+      hoverShadow: "0 12px 32px rgba(168,85,247,0.55)",
+      iconBg: "linear-gradient(135deg, #a855f7, #7c3aed)",
+      checkColor: "#a855f7",
+    },
   },
 ];
 
@@ -91,10 +123,12 @@ export function Packages() {
                   <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                   <div className="relative">
-                    <div className={`h-14 w-14 rounded-2xl grid place-items-center mb-5 ${
-                      p.featured ? "bg-gradient-primary shadow-glow" : "bg-accent"
-                    }`}>
-                      <Icon className={`h-6 w-6 ${p.featured ? "text-primary-foreground" : "text-primary"}`} />
+                    {/* Icon badge — uses package accent colour */}
+                    <div
+                      className="h-14 w-14 rounded-2xl grid place-items-center mb-5 shadow-lg"
+                      style={{ background: p.btnStyle.iconBg }}
+                    >
+                      <Icon className="h-6 w-6 text-white" />
                     </div>
 
                     <h3 className="text-xl font-bold text-foreground">{p.name}</h3>
@@ -108,19 +142,22 @@ export function Packages() {
                     <ul className="space-y-2.5 mb-6">
                       {p.benefits.map((b) => (
                         <li key={b} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: p.btnStyle.checkColor }} />
                           {b}
                         </li>
                       ))}
                     </ul>
 
+                    {/* Apply Now — unique gradient per package */}
                     <a
                       href={`/apply?package=${p.id}`}
-                      className={`mt-auto inline-flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                        p.featured
-                          ? "bg-gradient-primary text-primary-foreground shadow-glow hover:shadow-elevated"
-                          : "bg-secondary text-secondary-foreground hover:bg-gradient-primary hover:text-primary-foreground"
-                      }`}
+                      className="mt-auto inline-flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.03] active:scale-95"
+                      style={{
+                        background: p.btnStyle.background,
+                        boxShadow: p.btnStyle.shadow,
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = p.btnStyle.hoverShadow)}
+                      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = p.btnStyle.shadow)}
                     >
                       Apply Now <ArrowRight className="h-4 w-4" />
                     </a>
