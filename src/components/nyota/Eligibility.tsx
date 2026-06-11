@@ -94,14 +94,15 @@ export function Eligibility() {
       />
 
       <div className="relative z-10 container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-14 items-center max-w-6xl mx-auto">
+        <div className="flex flex-col gap-12 max-w-3xl mx-auto w-full">
 
-          {/* ── LEFT ── */}
+          {/* ── TOP: Headers ── */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="flex flex-col items-center text-center"
           >
             {/* badge */}
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-6"
@@ -118,67 +119,23 @@ export function Eligibility() {
               </span>
             </h2>
 
-            <p className="mt-5 text-base md:text-lg leading-relaxed max-w-md" style={{ color: "rgba(255,255,255,0.72)" }}>
+            <p className="mt-5 text-base md:text-lg leading-relaxed max-w-xl" style={{ color: "rgba(255,255,255,0.72)" }}>
               Our advanced scoring engine analyzes your profile in real-time. No credit pull. No hidden fees. Get an instant pre-approval tailored just for you.
             </p>
-
-            {/* perks */}
-            <ul className="mt-8 space-y-4">
-              {PERKS.map(({ icon: Icon, label }, i) => (
-                <motion.li
-                  key={label}
-                  initial={{ opacity: 0, x: -16 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 + i * 0.08 }}
-                  className="flex items-center gap-3"
-                >
-                  <span
-                    className="h-9 w-9 rounded-xl grid place-items-center flex-shrink-0"
-                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)" }}
-                  >
-                    <Icon className="h-4 w-4" style={{ color: "#4ade80" }} />
-                  </span>
-                  <span className="text-sm font-medium text-white">{label}</span>
-                </motion.li>
-              ))}
-            </ul>
-
-            {/* stats */}
-            <div className="mt-10 flex flex-wrap gap-3">
-              {STATS.map(({ value, label }, i) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className="rounded-2xl px-5 py-3 text-center"
-                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
-                >
-                  <div className="text-xl font-bold font-display"
-                       style={{ background: "linear-gradient(90deg,#f59e0b,#fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    {value}
-                  </div>
-                  <div className="text-[11px] uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    {label}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
           </motion.div>
 
-          {/* ── RIGHT: form card ── */}
+          {/* ── MIDDLE: form card ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15, duration: 0.6 }}
+            className="w-full"
           >
             {isMounted ? (
               <form
                 onSubmit={handleSubmit}
-                className="relative rounded-3xl overflow-hidden"
+                className="relative rounded-3xl overflow-hidden w-full"
                 style={{
                   background: "#fff",
                   boxShadow: "0 32px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08)",
@@ -338,7 +295,7 @@ export function Eligibility() {
               </form>
             ) : (
               <div
-                className="relative rounded-3xl overflow-hidden bg-white p-7 md:p-9 space-y-6 animate-pulse"
+                className="relative rounded-3xl overflow-hidden bg-white p-7 md:p-9 space-y-6 animate-pulse w-full"
                 style={{
                   boxShadow: "0 32px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08)",
                   height: "472px"
@@ -371,6 +328,53 @@ export function Eligibility() {
               </div>
             )}
           </motion.div>
+
+          {/* ── BOTTOM: Perks & Stats ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="grid md:grid-cols-2 gap-8 w-full items-center mt-6"
+          >
+            {/* perks */}
+            <ul className="space-y-4">
+              {PERKS.map(({ icon: Icon, label }, i) => (
+                <li
+                  key={label}
+                  className="flex items-center gap-3"
+                >
+                  <span
+                    className="h-9 w-9 rounded-xl grid place-items-center flex-shrink-0"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)" }}
+                  >
+                    <Icon className="h-4 w-4" style={{ color: "#4ade80" }} />
+                  </span>
+                  <span className="text-sm font-medium text-white">{label}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* stats */}
+            <div className="flex flex-col gap-4">
+              {STATS.map(({ value, label }, i) => (
+                <div
+                  key={label}
+                  className="rounded-2xl px-5 py-3 flex items-center justify-between"
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
+                >
+                  <div className="text-[12px] uppercase tracking-wider font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
+                    {label}
+                  </div>
+                  <div className="text-2xl font-bold font-display"
+                       style={{ background: "linear-gradient(90deg,#f59e0b,#fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
         </div>
       </div>
 
