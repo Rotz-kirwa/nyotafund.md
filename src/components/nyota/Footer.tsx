@@ -104,7 +104,7 @@ export function Footer() {
         </motion.div>
 
         {/* ── Contact cards ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {CONTACT_CARDS.map(({ icon: Icon, label, value, sub, color, href }, i) => (
             <motion.a
               key={label}
@@ -124,9 +124,9 @@ export function Footer() {
                 <Icon className="h-5 w-5" style={{ color }} />
               </div>
               <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</div>
-              <div className="font-semibold text-white text-sm leading-snug">{value}</div>
+              <div className="font-semibold text-white text-sm leading-snug break-words">{value}</div>
               <div className="text-xs mt-1 flex items-center gap-1" style={{ color: "rgba(255,255,255,0.35)" }}>
-                <Clock className="h-3 w-3" /> {sub}
+                <Clock className="h-3 w-3 flex-shrink-0" /> <span className="break-words">{sub}</span>
               </div>
             </motion.a>
           ))}

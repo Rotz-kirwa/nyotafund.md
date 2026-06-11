@@ -16,6 +16,9 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.jpg", "og-image.jpg"],
+      devOptions: {
+        enabled: true,
+      },
       manifest: {
         name: "NyotaCredit",
         short_name: "Nyota",
@@ -23,16 +26,19 @@ export default defineConfig({
         theme_color: "#0a190f",
         background_color: "#ffffff",
         display: "standalone",
+        start_url: "/",
         icons: [
           {
-            src: "favicon.jpg",
+            src: "icon-192.png",
             sizes: "192x192",
-            type: "image/jpeg",
+            type: "image/png",
+            purpose: "any maskable"
           },
           {
-            src: "favicon.jpg",
+            src: "icon-512.png",
             sizes: "512x512",
-            type: "image/jpeg",
+            type: "image/png",
+            purpose: "any maskable"
           },
         ],
       },
