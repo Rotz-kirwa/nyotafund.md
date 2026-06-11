@@ -8,7 +8,7 @@ const packages = [
     icon: Sprout,
     range: "KSh 10,000 – 20,000",
     fee: "KSh 100",
-    benefits: ["Same-day disbursement", "No collateral", "Flexible 30-day terms"],
+    benefits: ["Same-day disbursement", "No collateral", "Flexible 3-month terms"],
     featured: false,
     // Sky blue
     btnStyle: {
