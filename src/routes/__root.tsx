@@ -103,6 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", type: "image/jpeg", href: "/favicon.jpg" },
       { rel: "apple-touch-icon", href: "/og-image.jpg" },
       // DNS prefetch + preconnect for Google Fonts CDN
@@ -157,6 +158,13 @@ function RootComponent() {
   const [adminUrl, setAdminUrl] = useState("/admin");
 
   useEffect(() => {
+    // Only register SW in the browser
+    if (typeof window !== "undefined") {
+      import("virtual:pwa-register").then(({ registerSW }) => {
+        registerSW({ immediate: true });
+      }).catch(err => console.error("PWA registration failed:", err));
+    }
+
     const hostname = window.location.hostname;
     const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
     const isLocalNetwork =
