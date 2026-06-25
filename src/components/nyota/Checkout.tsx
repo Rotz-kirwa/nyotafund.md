@@ -159,15 +159,42 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                 </h1>
                 <p className="text-white/40 text-base">One-time processing fee unlocks your loan</p>
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {PKGS.map((p, i) => (
-                  <motion.button key={p.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+              {/* pt-2 keeps the Popular badge (now top-right corner) from being clipped */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                {PKGS.map((p) => (
+                  <button
+                    key={p.id}
                     onClick={() => { setPkg(p); setStep(1); }}
-                    className="relative text-left rounded-2xl p-5 border transition-all hover:-translate-y-1 group"
-                    style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.07)" }}>
+                    className="relative text-left rounded-2xl p-5 border overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      borderColor: p.popular ? `${p.color}55` : "rgba(255,255,255,0.07)",
+                      /* Stable GPU layer — eliminates mobile ghost-paint from compositing conflicts */
+                      isolation: "isolate",
+                      transform: "translate3d(0,0,0)",
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      /* Targeted transitions only — transition-all clashes with framer transforms */
+                      transition: "border-color 0.2s ease, background 0.2s ease",
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = `${p.color}88`;
+                      e.currentTarget.style.background = "rgba(255,255,255,0.055)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = p.popular ? `${p.color}55` : "rgba(255,255,255,0.07)";
+                      e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                    }}
+                  >
+                    {/* Popular badge — pinned top-right, contained by overflow-hidden on card */}
                     {p.popular && (
-                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full"
-                        style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white" }}>Popular</div>
+                      <div
+                        className="absolute top-0 right-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-bl-xl rounded-tr-2xl"
+                        style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white" }}
+                      >
+                        Popular
+                      </div>
                     )}
                     <div className="h-11 w-11 rounded-xl grid place-items-center mb-4" style={{ background: p.color + "33", border: `1px solid ${p.color}55` }}>
                       <p.Icon size={20} color={p.color} />
@@ -185,7 +212,7 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                       <span className="text-xs text-white/40">Processing fee</span>
                       <span className="font-bold text-sm" style={{ color: p.color }}>{p.feeLabel}</span>
                     </div>
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             </motion.div>
