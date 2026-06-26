@@ -24,7 +24,7 @@ const packages = [
     name: "Growth",
     icon: TrendingUp,
     range: "KSh 50,000 – 100,000",
-    fee: "KSh 300",
+    fee: "KSh 150",
     benefits: ["Priority approval", "Build credit score", "Repay up to 6 months"],
     featured: true,
     // Brand green
@@ -41,7 +41,7 @@ const packages = [
     name: "Business Boost",
     icon: Briefcase,
     range: "KSh 150,000 – 300,000",
-    fee: "KSh 700",
+    fee: "KSh 200",
     benefits: ["Dedicated advisor", "Working capital ready", "12-month repayment"],
     featured: false,
     // Amber orange
@@ -58,7 +58,7 @@ const packages = [
     name: "Elite",
     icon: Crown,
     range: "KSh 350,000 – 500,000",
-    fee: "KSh 1,500",
+    fee: "KSh 250",
     benefits: ["VIP processing", "Lowest interest rates", "24-month repayment"],
     featured: false,
     // Violet purple

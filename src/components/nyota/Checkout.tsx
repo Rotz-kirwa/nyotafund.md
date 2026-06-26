@@ -10,10 +10,10 @@ import { Logo } from "@/components/nyota/Logo";
 import { apiUrl } from "@/lib/api-url";
 
 const PKGS = [
-  { id: "starter", name: "Starter", Icon: Sprout, range: "KSh 10,000 – 20,000", fee: 100, feeLabel: "KSh 100", color: "#059669", benefits: ["Same-day disbursement", "No collateral", "3-month terms"] },
-  { id: "growth", name: "Growth", Icon: TrendingUp, range: "KSh 50,000 – 100,000", fee: 300, feeLabel: "KSh 300", color: "#10b981", popular: true, benefits: ["Priority approval", "Build credit score", "6-month repayment"] },
-  { id: "business-boost", name: "Business Boost", Icon: Briefcase, range: "KSh 150,000 – 300,000", fee: 700, feeLabel: "KSh 700", color: "#0d9488", benefits: ["Dedicated advisor", "Working capital ready", "12-month repayment"] },
-  { id: "elite", name: "Elite", Icon: Crown, range: "KSh 350,000 – 500,000", fee: 1500, feeLabel: "KSh 1,500", color: "#d97706", benefits: ["VIP processing", "Lowest interest rates", "24-month repayment"] },
+  { id: "starter",        name: "Starter",        Icon: Sprout,     range: "KSh 10,000 – 20,000",    fee: 100, feeLabel: "KSh 100", color: "#059669", benefits: ["Same-day disbursement", "No collateral", "3-month terms"] },
+  { id: "growth",         name: "Growth",         Icon: TrendingUp, range: "KSh 50,000 – 100,000",   fee: 150, feeLabel: "KSh 150", color: "#10b981", popular: true, benefits: ["Priority approval", "Build credit score", "6-month repayment"] },
+  { id: "business-boost", name: "Business Boost", Icon: Briefcase,  range: "KSh 150,000 – 300,000",  fee: 200, feeLabel: "KSh 200", color: "#0d9488", benefits: ["Dedicated advisor", "Working capital ready", "12-month repayment"] },
+  { id: "elite",          name: "Elite",          Icon: Crown,      range: "KSh 350,000 – 500,000",  fee: 250, feeLabel: "KSh 250", color: "#d97706", benefits: ["VIP processing", "Lowest interest rates", "24-month repayment"] },
 ];
 
 type Pkg = typeof PKGS[number];
