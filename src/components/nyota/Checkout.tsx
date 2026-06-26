@@ -184,8 +184,8 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                         p.popular ? "ring-2 ring-primary/40 border-primary/30" : "border-border/60"
                       }`}
                     >
-                      {/* glow on hover */}
-                      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-0" style={{ background: `radial-gradient(circle at 50% 0%, ${p.color}15, transparent 70%)` }} />
+                      {/* glow on hover — pointer-events-none so it never blocks button clicks */}
+                      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, ${p.color}15, transparent 70%)`, zIndex: 0 }} />
 
                       <div className="relative">
                         <div className="h-12 w-12 rounded-2xl grid place-items-center mb-5 shadow" style={{ background: p.color + "22", border: `1.5px solid ${p.color}55` }}>
