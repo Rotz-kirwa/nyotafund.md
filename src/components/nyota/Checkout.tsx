@@ -36,6 +36,16 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
     setCountdown(60);
     const tick = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
 
+    // Safaricom terminal failure codes:
+    // 1032 = request cancelled by user
+    // 1037 = STK push timed out / user unreachable
+    // 2001 = wrong PIN entered
+    // 1019 = transaction expired
+    // ResultCode "0" = success
+    // Anything else (including no ResultCode, ResultCode "1", or
+    // "The transaction is still under processing") = still waiting → keep polling
+    const TERMINAL_FAILURES = new Set(["1032", "1037", "2001", "1019"]);
+
     const poll = setInterval(async () => {
       try {
         const res = await fetch(apiUrl("/api/mpesa/status"), {
@@ -44,25 +54,39 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
           body: JSON.stringify({ checkoutRequestId: checkoutId }),
         });
         const data = await res.json() as { ResultCode?: string; ResultDesc?: string };
+
         if (data.ResultCode === "0") {
+          // ✅ Payment confirmed
           clearInterval(tick);
           clearInterval(poll);
           setTxnId(checkoutId.slice(0, 14));
           setPStatus("success");
           setTimeout(() => setStep(3), 1200);
-        } else if (data.ResultCode && data.ResultCode !== "1032") {
-          // 1032 = still waiting; anything else is a real failure
+        } else if (data.ResultCode && TERMINAL_FAILURES.has(data.ResultCode)) {
+          // ❌ Definitive failure — user cancelled, timed out, or wrong PIN
           clearInterval(tick);
           clearInterval(poll);
           setErrMsg(data.ResultDesc ?? "Payment failed. Please try again.");
           setPStatus("failed");
         }
+        // All other cases (no ResultCode, "1", "still processing" etc.)
+        // → transaction is still in flight, keep polling silently
       } catch {
         // network hiccup — keep polling
       }
     }, 3000);
 
-    return () => { clearInterval(tick); clearInterval(poll); };
+    // If countdown hits 0, stop polling and show a gentle retry prompt
+    const timeoutId = setTimeout(() => {
+      clearInterval(tick);
+      clearInterval(poll);
+      if (pStatus === "pending") {
+        setErrMsg("No response from M-Pesa within 60 seconds. Please try again.");
+        setPStatus("failed");
+      }
+    }, 62000);
+
+    return () => { clearInterval(tick); clearInterval(poll); clearTimeout(timeoutId); };
   }, [pStatus, checkoutId]);
 
   // TikTok Pixel tracking for Checkout stages
