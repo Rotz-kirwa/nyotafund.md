@@ -4,14 +4,16 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/nyota/Logo";
 
 const links = [
-  { href: "/#home", label: "Home" },
-  { href: "/#packages", label: "Loans" },
-  { href: "/eligibility", label: "Eligibility" },
-  { href: "/#features", label: "Features" },
-  { href: "/#testimonials", label: "Stories" },
-  { href: "/#about", label: "About" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/#home",         label: "Home"         },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#packages",     label: "Loans"        },
+  { href: "/eligibility",   label: "Eligibility"  },
+  { href: "/#features",     label: "Features"     },
+  { href: "/#testimonials", label: "Stories"      },
+  { href: "/#faq",          label: "FAQ"          },
+  { href: "/#contact",      label: "Contact"      },
 ];
+
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);

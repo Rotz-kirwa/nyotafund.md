@@ -4,11 +4,13 @@ import { Navbar } from "@/components/nyota/Navbar";
 import { Hero } from "@/components/nyota/Hero";
 
 // Lazy-load all below-the-fold sections — they are NOT needed for LCP
+const HowItWorks  = lazy(() => import("@/components/nyota/HowItWorks").then(m => ({ default: m.HowItWorks })));
 const Packages    = lazy(() => import("@/components/nyota/Packages").then(m => ({ default: m.Packages })));
 const Eligibility = lazy(() => import("@/components/nyota/Eligibility").then(m => ({ default: m.Eligibility })));
 const Features    = lazy(() => import("@/components/nyota/Features").then(m => ({ default: m.Features })));
 const Testimonials= lazy(() => import("@/components/nyota/Testimonials").then(m => ({ default: m.Testimonials })));
 const About       = lazy(() => import("@/components/nyota/About").then(m => ({ default: m.About })));
+const FAQ         = lazy(() => import("@/components/nyota/FAQ").then(m => ({ default: m.FAQ })));
 const CtaBanner   = lazy(() => import("@/components/nyota/CtaBanner").then(m => ({ default: m.CtaBanner })));
 const Footer      = lazy(() => import("@/components/nyota/Footer").then(m => ({ default: m.Footer })));
 
@@ -41,7 +43,13 @@ function Index() {
       <Hero />
       {/* Below-the-fold — lazy loaded, non-blocking */}
       <Suspense fallback={<SectionSkeleton />}>
+        <HowItWorks />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
         <Packages />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <Eligibility />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
         <Features />
@@ -51,6 +59,9 @@ function Index() {
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
         <About />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <FAQ />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
         <CtaBanner />

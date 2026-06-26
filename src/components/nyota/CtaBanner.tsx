@@ -15,12 +15,13 @@ export function CtaBanner() {
           {Array.from({ length: 8 }).map((_, i) => (
             <motion.span
               key={i}
-              className="absolute h-2 w-2 rounded-full bg-primary-foreground/40"
+              className="absolute h-2 w-2 rounded-full bg-primary-foreground/40 pointer-events-none"
               style={{ left: `${(i * 73) % 100}%`, top: `${(i * 41) % 90}%` }}
               animate={{ y: [0, -20, 0], opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 3 + (i % 4), repeat: Infinity, delay: i * 0.4 }}
             />
           ))}
+
 
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full glass-dark text-primary-foreground px-4 py-1.5 text-xs font-semibold mb-5">

@@ -99,24 +99,24 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
   const fade = { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -18 } };
 
   return (
-    <div className="min-h-[100dvh] relative overflow-x-hidden" style={{ background: "linear-gradient(135deg,#050e07 0%,#091508 50%,#0d1f10 100%)" }}>
-      {/* Blobs (Optimized with radial gradients to prevent mobile GPU smearing) */}
+    <div className="min-h-[100dvh] relative overflow-x-hidden bg-background">
+      {/* Subtle light mesh blobs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] max-w-[30rem] max-h-[30rem] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #059669 0%, transparent 70%)" }} />
-        <div className="absolute -bottom-[20%] -right-[10%] w-[90vw] h-[90vw] max-w-[35rem] max-h-[35rem] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #d97706 0%, transparent 70%)" }} />
+        <div className="absolute -top-[20%] -left-[10%] w-[80vw] h-[80vw] max-w-[30rem] max-h-[30rem] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #22c55e 0%, transparent 70%)" }} />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[90vw] h-[90vw] max-w-[35rem] max-h-[35rem] rounded-full opacity-5" style={{ background: "radial-gradient(circle, #f59e0b 0%, transparent 70%)" }} />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 border-b border-white/5">
-        <Link to="/" className="flex items-center gap-2 text-white/50 hover:text-white/80 text-sm transition-colors">
+      <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-border/60 bg-white/80 backdrop-blur-md">
+        <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">
           <ArrowLeft size={15} /> Back
         </Link>
         <div>
           <a href="/">
-            <Logo dark size={32} />
+            <Logo size={32} />
           </a>
         </div>
-        <div className="flex items-center gap-1.5 text-white/30 text-xs">
+        <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
           <Lock size={11} /> Secure
         </div>
       </header>
@@ -129,15 +129,15 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
               <div className="flex items-center gap-1.5">
                 <div className="h-7 w-7 rounded-full grid place-items-center text-xs font-bold transition-all"
                   style={{
-                    background: i < step ? "linear-gradient(135deg,#059669,#10b981)" : i === step ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)",
-                    color: i <= step ? "white" : "rgba(255,255,255,0.25)",
-                    border: i === step ? "1px solid rgba(255,255,255,0.15)" : "none",
+                    background: i < step ? "linear-gradient(135deg,#059669,#10b981)" : i === step ? "#f0fdf4" : "#f3f4f6",
+                    color: i < step ? "white" : i === step ? "#15803d" : "#9ca3af",
+                    border: i === step ? "2px solid #16a34a" : "none",
                   }}>
                   {i < step ? <Check size={11} /> : i + 1}
                 </div>
-                <span className="text-xs hidden sm:block" style={{ color: i <= step ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.2)" }}>{s}</span>
+                <span className="text-xs hidden sm:block font-medium" style={{ color: i <= step ? "#374151" : "#9ca3af" }}>{s}</span>
               </div>
-              {i < 3 && <div className="w-6 h-px" style={{ background: i < step ? "#059669" : "rgba(255,255,255,0.08)" }} />}
+              {i < 3 && <div className="w-6 h-px" style={{ background: i < step ? "#16a34a" : "#e5e7eb" }} />}
             </div>
           ))}
         </div>
@@ -150,70 +150,82 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
           {/* ── STEP 0: Choose Package ── */}
           {step === 0 && (
             <motion.div key="s0" {...fade}>
-              <div className="text-center mb-10">
-                <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs mb-5 border border-white/10 text-white/60" style={{ background: "rgba(255,255,255,0.05)" }}>
-                  <Sparkles size={12} color="#f59e0b" /> Choose your loan package
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 rounded-full bg-accent text-accent-foreground px-4 py-1.5 text-xs font-semibold mb-5">
+                  <Sparkles size={12} /> Choose your loan package
                 </div>
-                <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-3">
-                  Pick Your <span style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Package</span>
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
+                  Apply for a{" "}
+                  <span className="text-gradient-primary">Loan</span>
                 </h1>
-                <p className="text-white/40 text-base">One-time processing fee unlocks your loan</p>
+                <p className="text-muted-foreground text-base max-w-md mx-auto">
+                  Select a package below, pay a one-time processing fee via M-Pesa, and receive funds in minutes.
+                </p>
               </div>
-              {/* pt-2 keeps the Popular badge (now top-right corner) from being clipped */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-                {PKGS.map((p) => (
-                  <button
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+                {PKGS.map((p, idx) => (
+                  <motion.div
                     key={p.id}
-                    onClick={() => { setPkg(p); setStep(1); }}
-                    className="relative text-left rounded-2xl p-5 border overflow-hidden"
-                    style={{
-                      background: "rgba(255,255,255,0.03)",
-                      borderColor: p.popular ? `${p.color}55` : "rgba(255,255,255,0.07)",
-                      /* Stable GPU layer — eliminates mobile ghost-paint from compositing conflicts */
-                      isolation: "isolate",
-                      transform: "translate3d(0,0,0)",
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                      /* Targeted transitions only — transition-all clashes with framer transforms */
-                      transition: "border-color 0.2s ease, background 0.2s ease",
-                      WebkitTapHighlightColor: "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = `${p.color}88`;
-                      e.currentTarget.style.background = "rgba(255,255,255,0.055)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = p.popular ? `${p.color}55` : "rgba(255,255,255,0.07)";
-                      e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-                    }}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.08 }}
+                    className="group relative"
                   >
-                    {/* Popular badge — pinned top-right, contained by overflow-hidden on card */}
                     {p.popular && (
-                      <div
-                        className="absolute top-0 right-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-bl-xl rounded-tr-2xl"
-                        style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white" }}
-                      >
-                        Popular
+                      <div className="absolute -top-3 inset-x-0 flex justify-center z-10">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full text-white" style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)" }}>
+                          Most Popular
+                        </span>
                       </div>
                     )}
-                    <div className="h-11 w-11 rounded-xl grid place-items-center mb-4" style={{ background: p.color + "33", border: `1px solid ${p.color}55` }}>
-                      <p.Icon size={20} color={p.color} />
+                    <div
+                      className={`relative h-full rounded-3xl bg-card border p-6 shadow-card flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated ${
+                        p.popular ? "ring-2 ring-primary/40 border-primary/30" : "border-border/60"
+                      }`}
+                    >
+                      {/* glow on hover */}
+                      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-0" style={{ background: `radial-gradient(circle at 50% 0%, ${p.color}15, transparent 70%)` }} />
+
+                      <div className="relative">
+                        <div className="h-12 w-12 rounded-2xl grid place-items-center mb-5 shadow" style={{ background: p.color + "22", border: `1.5px solid ${p.color}55` }}>
+                          <p.Icon size={22} color={p.color} />
+                        </div>
+
+                        <h3 className="text-xl font-bold text-foreground mb-1">{p.name}</h3>
+                        <div className="text-sm font-semibold mb-1" style={{ color: p.color }}>{p.range}</div>
+                        <div className="text-xs text-muted-foreground mb-5">
+                          Processing fee · <span className="font-bold text-foreground">{p.feeLabel}</span>
+                        </div>
+
+                        <ul className="space-y-2 mb-6">
+                          {p.benefits.map((b) => (
+                            <li key={b} className="flex items-center gap-2 text-sm text-foreground/70">
+                              <Check size={13} style={{ color: p.color }} className="flex-shrink-0" /> {b}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* CTA button */}
+                      <button
+                        onClick={() => { setPkg(p); setStep(1); }}
+                        className="mt-auto w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.03] active:scale-95"
+                        style={{ background: `linear-gradient(135deg,${p.color}cc,${p.color})`, boxShadow: `0 6px 20px ${p.color}40` }}
+                      >
+                        Apply Now <ArrowRight size={15} />
+                      </button>
                     </div>
-                    <div className="font-display font-bold text-white text-lg mb-0.5">{p.name}</div>
-                    <div className="text-xs mb-3" style={{ color: p.color }}>{p.range}</div>
-                    <ul className="space-y-1.5 mb-4">
-                      {p.benefits.map((b) => (
-                        <li key={b} className="flex items-center gap-2 text-xs text-white/50">
-                          <Check size={11} color={p.color} /> {b}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                      <span className="text-xs text-white/40">Processing fee</span>
-                      <span className="font-bold text-sm" style={{ color: p.color }}>{p.feeLabel}</span>
-                    </div>
-                  </button>
+                  </motion.div>
                 ))}
+              </div>
+
+              {/* Trust strip */}
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5"><Shield size={13} className="text-primary" /> CBK Licensed</span>
+                <span className="flex items-center gap-1.5"><Lock size={13} className="text-primary" /> 256-bit SSL</span>
+                <span className="flex items-center gap-1.5"><Star size={13} className="text-yellow-500 fill-yellow-500" /> 4.9 / 5 rating</span>
+                <span className="flex items-center gap-1.5"><Wallet size={13} className="text-primary" /> Funds via M-Pesa</span>
               </div>
             </motion.div>
           )}
@@ -222,9 +234,9 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
           {step === 1 && pkg && (
             <motion.div key="s1" {...fade} className="grid lg:grid-cols-[320px_1fr] gap-6">
               <OrderSummary pkg={pkg} />
-              <div className="rounded-2xl p-6 md:p-8 border border-white/8" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <h2 className="font-display text-2xl font-bold text-white mb-1">Your Details</h2>
-                <p className="text-white/40 text-sm mb-6">We need this to process your application</p>
+              <div className="rounded-2xl p-6 md:p-8 bg-card border border-border/60 shadow-card">
+                <h2 className="font-display text-2xl font-bold text-foreground mb-1">Your Details</h2>
+                <p className="text-muted-foreground text-sm mb-6">We need this to process your application</p>
                 <form onSubmit={(e) => { e.preventDefault(); if (form.name && form.id && form.phone) setStep(2); }}>
                   {[
                     { key: "name", label: "Full Name", placeholder: "e.g. Brian Otieno", type: "text", autoComplete: "off" },
@@ -232,7 +244,7 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                     { key: "phone", label: "M-Pesa Phone Number", placeholder: "e.g. 0712 345 678", type: "tel", autoComplete: "off" },
                   ].map((f) => (
                     <div key={f.key} className="mb-4">
-                      <label className="block text-xs font-semibold text-white/50 mb-2">{f.label}</label>
+                      <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{f.label}</label>
                       <input
                         required
                         type={f.type}
@@ -242,29 +254,24 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                         value={form[f.key as keyof typeof form]}
                         onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                         placeholder={f.placeholder}
-                        className="w-full rounded-xl px-4 py-3.5 text-sm text-white outline-none transition-all"
-                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                        className="w-full rounded-xl px-4 py-3.5 text-sm text-foreground outline-none transition-all"
+                        style={{ border: "1.5px solid #e5e7eb", background: "#f9fafb" }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.12)"; }}
+                        onBlur={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none"; }}
                       />
                     </div>
                   ))}
-                  {/* ── Fee Disclosure Notice ── */}
-                  <div
-                    className="mt-6 mb-2 rounded-2xl p-4 border text-sm leading-relaxed"
-                    style={{
-                      background: "rgba(245,158,11,0.07)",
-                      borderColor: "rgba(245,158,11,0.25)",
-                    }}
-                  >
+                  {/* Fee Disclosure */}
+                  <div className="mt-6 mb-2 rounded-2xl p-4 border text-sm leading-relaxed" style={{ background: "#fffbeb", borderColor: "#fcd34d" }}>
                     <div className="flex items-start gap-2.5">
-                      <Shield size={15} className="mt-0.5 shrink-0" style={{ color: "#f59e0b" }} />
-                      <p style={{ color: "rgba(255,255,255,0.65)" }}>
+                      <Shield size={15} className="mt-0.5 shrink-0" style={{ color: "#d97706" }} />
+                      <p className="text-amber-800">
                         A processing and account activation fee of{" "}
-                        <span className="font-bold" style={{ color: "#f59e0b" }}>{pkg.feeLabel}</span>{" "}
-                        will be required to facilitate application review, verification, onboarding,
-                        and loan processing. This fee is{" "}
-                        <span className="font-semibold text-white">fully refundable</span>{" "}
-                        upon successful completion of the application process and is{" "}
-                        <span className="font-semibold text-white">not deducted</span>{" "}
+                        <span className="font-bold text-amber-700">{pkg.feeLabel}</span>{" "}
+                        will be required. This fee is{" "}
+                        <span className="font-semibold text-gray-900">fully refundable</span>{" "}
+                        upon successful completion and is{" "}
+                        <span className="font-semibold text-gray-900">not deducted</span>{" "}
                         from your approved loan amount.
                       </p>
                     </div>
@@ -272,8 +279,7 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
 
                   <div className="flex gap-3 mt-4">
                     <button type="button" onClick={() => setStep(0)}
-                      className="flex items-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white/60 transition-all hover:text-white"
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      className="flex items-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all bg-secondary border border-border">
                       <ArrowLeft size={15} /> Back
                     </button>
                     <button type="submit" className="flex-1 flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
@@ -546,37 +552,37 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
 
 function OrderSummary({ pkg }: { pkg: NonNullable<ReturnType<typeof PKGS.find>> }) {
   return (
-    <div className="rounded-2xl p-5 border border-white/8 sticky top-6" style={{ background: "rgba(255,255,255,0.03)" }}>
-      <div className="text-xs uppercase tracking-widest text-white/30 mb-4">Order Summary</div>
-      <div className="flex items-center gap-3 rounded-xl p-3 mb-5 border border-white/6" style={{ background: "rgba(255,255,255,0.04)" }}>
+    <div className="rounded-2xl p-5 bg-card border border-border/60 shadow-card sticky top-6">
+      <div className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Order Summary</div>
+      <div className="flex items-center gap-3 rounded-xl p-3 mb-5 bg-secondary border border-border/50">
         <div className="h-11 w-11 rounded-xl grid place-items-center" style={{ background: pkg.color + "22", border: `1px solid ${pkg.color}44` }}>
           <pkg.Icon size={20} color={pkg.color} />
         </div>
         <div>
-          <div className="font-bold text-white font-display">{pkg.name}</div>
+          <div className="font-bold text-foreground font-display">{pkg.name}</div>
           <div className="text-xs" style={{ color: pkg.color }}>{pkg.range}</div>
         </div>
       </div>
       <ul className="space-y-2 mb-5">
         {pkg.benefits.map((b) => (
-          <li key={b} className="flex items-center gap-2 text-xs text-white/50">
+          <li key={b} className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check size={11} color={pkg.color} /> {b}
           </li>
         ))}
       </ul>
-      <div className="border-t border-white/6 pt-4 space-y-2">
-        <div className="flex justify-between text-sm text-white/40">
+      <div className="border-t border-border/60 pt-4 space-y-2">
+        <div className="flex justify-between text-sm text-muted-foreground">
           <span>Processing Fee</span><span>{pkg.feeLabel}</span>
         </div>
-        <div className="flex justify-between font-bold text-white">
+        <div className="flex justify-between font-bold text-foreground">
           <span>Total Due</span>
           <span style={{ color: pkg.color }}>{pkg.feeLabel}</span>
         </div>
       </div>
       <div className="mt-4 space-y-2">
         {[Shield, Lock].map((Icon, i) => (
-          <div key={i} className="flex items-center gap-2 text-xs text-white/25">
-            <Icon size={11} color="#10b981" />
+          <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Icon size={11} color="#16a34a" />
             {i === 0 ? "CBK Licensed & Regulated" : "256-bit SSL Encryption"}
           </div>
         ))}
