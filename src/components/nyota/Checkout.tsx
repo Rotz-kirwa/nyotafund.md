@@ -296,70 +296,66 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
           {step === 2 && pkg && (
             <motion.div key="s2" {...fade} className="grid lg:grid-cols-[320px_1fr] gap-6">
               <OrderSummary pkg={pkg} />
-              <div className="rounded-2xl p-6 md:p-8 border border-white/8" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <div className="rounded-2xl p-6 md:p-8 bg-card border border-border/60 shadow-card">
                 {/* M-Pesa Header */}
-                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/8">
+                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/60">
                   <div className="h-12 w-12 rounded-xl grid place-items-center" style={{ background: "#00A651" }}>
                     <Smartphone size={22} color="white" />
                   </div>
                   <div>
-                    <div className="font-display font-bold text-white text-lg">M-Pesa Payment</div>
-                    <div className="text-xs text-white/40">Secure mobile money payment</div>
+                    <div className="font-display font-bold text-foreground text-lg">M-Pesa Payment</div>
+                    <div className="text-xs text-muted-foreground">Secure mobile money payment</div>
                   </div>
-                  <div className="ml-auto text-2xl font-bold font-display" style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  <div className="ml-auto text-2xl font-bold font-display" style={{ color: "#d97706" }}>
                     {pkg.feeLabel}
                   </div>
                 </div>
 
                 {pStatus === "idle" && (
                   <motion.div {...fade}>
-                    {/* ── Fee Disclosure Notice ── */}
-                    <div
-                      className="rounded-2xl p-4 mb-5 border text-sm leading-relaxed"
-                      style={{
-                        background: "rgba(245,158,11,0.07)",
-                        borderColor: "rgba(245,158,11,0.25)",
-                      }}
-                    >
+                    {/* Fee Disclosure */}
+                    <div className="rounded-2xl p-4 mb-5 border text-sm leading-relaxed" style={{ background: "#fffbeb", borderColor: "#fcd34d" }}>
                       <div className="flex items-start gap-2.5">
-                        <Shield size={15} className="mt-0.5 shrink-0" style={{ color: "#f59e0b" }} />
-                        <p style={{ color: "rgba(255,255,255,0.65)" }}>
-                          A processing and account activation fee of{" "}
-                          <span className="font-bold" style={{ color: "#f59e0b" }}>{pkg.feeLabel}</span>{" "}
-                          will be required to facilitate application review, verification, onboarding,
-                          and loan processing. This fee is{" "}
-                          <span className="font-semibold text-white">fully refundable</span>{" "}
-                          upon successful completion of the application process and is{" "}
-                          <span className="font-semibold text-white">not deducted</span>{" "}
+                        <Shield size={15} className="mt-0.5 shrink-0" style={{ color: "#d97706" }} />
+                        <p className="text-amber-800">
+                          A one-time processing fee of{" "}
+                          <span className="font-bold text-amber-700">{pkg.feeLabel}</span>{" "}
+                          is required for application review and onboarding. This fee is{" "}
+                          <span className="font-semibold text-gray-900">fully refundable</span>{" "}
+                          and is{" "}
+                          <span className="font-semibold text-gray-900">not deducted</span>{" "}
                           from your approved loan amount.
                         </p>
                       </div>
                     </div>
 
-                    <div className="rounded-xl p-4 mb-6 border border-white/8" style={{ background: "rgba(255,255,255,0.04)" }}>
-
-                      <div className="text-xs text-white/40 mb-1">Sending STK Push to</div>
-                      <div className="font-semibold text-white flex items-center gap-2">
-                        <Smartphone size={14} color="#10b981" /> {form.phone || "07XX XXX XXX"}
+                    {/* Phone number box */}
+                    <div className="rounded-xl p-4 mb-4 border border-border/60 bg-secondary/40">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Sending STK Push to</div>
+                      <div className="font-semibold text-foreground flex items-center gap-2">
+                        <Smartphone size={14} color="#00A651" /> {form.phone || "07XX XXX XXX"}
                       </div>
                     </div>
-                    <div className="rounded-xl p-4 mb-6 space-y-2.5 border border-white/8" style={{ background: "rgba(255,255,255,0.04)" }}>
+
+                    {/* Payment details */}
+                    <div className="rounded-xl p-4 mb-6 border border-border/60 bg-secondary/40 space-y-2.5">
                       {[["Business No.", "4187257"], ["Account Ref.", `NC-${pkg.id.toUpperCase()}`], ["Amount", pkg.feeLabel]].map(([l, v]) => (
                         <div key={l} className="flex justify-between text-sm">
-                          <span className="text-white/40">{l}</span>
-                          <span className="font-semibold text-white">{v}</span>
+                          <span className="text-muted-foreground">{l}</span>
+                          <span className="font-semibold text-foreground">{v}</span>
                         </div>
                       ))}
                     </div>
+
                     {errMsg && (
-                      <div className="rounded-xl p-3 mb-4 text-sm text-center border border-red-500/30" style={{ background: "rgba(239,68,68,0.08)", color: "#f87171" }}>
+                      <div className="rounded-xl p-3 mb-4 text-sm text-center border border-red-200 bg-red-50 text-red-600">
                         {errMsg}
                       </div>
                     )}
+
                     <div className="flex gap-3">
                       <button onClick={() => setStep(1)}
-                        className="flex items-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white/60 hover:text-white transition-all"
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                        className="flex items-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all bg-secondary border border-border">
                         <ArrowLeft size={15} /> Back
                       </button>
                       <button onClick={async () => {
@@ -392,7 +388,7 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                         }
                       }}
                         className="flex-1 flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
-                        style={{ background: "linear-gradient(135deg,#00A651,#059669)", boxShadow: "0 8px 30px rgba(0,166,81,0.4)" }}>
+                        style={{ background: "linear-gradient(135deg,#00A651,#059669)", boxShadow: "0 8px 30px rgba(0,166,81,0.35)" }}>
                         <Wallet size={16} /> Send M-Pesa Request
                       </button>
                     </div>
@@ -400,31 +396,31 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                 )}
 
                 {pStatus === "sending" && (
-                  <motion.div {...fade} className="text-center py-10">
-                    <div className="h-16 w-16 rounded-full grid place-items-center mx-auto mb-4 animate-spin" style={{ background: "conic-gradient(#00A651,transparent)", borderRadius: "50%" }}>
-                      <div className="h-12 w-12 rounded-full" style={{ background: "#050e07" }} />
+                  <motion.div {...fade} className="text-center py-12">
+                    <div className="h-16 w-16 rounded-full mx-auto mb-5 animate-spin" style={{ background: "conic-gradient(#00A651 0%, transparent 75%)", padding: 3 }}>
+                      <div className="h-full w-full rounded-full bg-background" />
                     </div>
-                    <div className="font-semibold text-white mb-1">Sending STK Push…</div>
-                    <div className="text-white/40 text-sm">Reaching {form.phone}</div>
+                    <div className="font-semibold text-foreground mb-1">Sending STK Push…</div>
+                    <div className="text-muted-foreground text-sm">Reaching {form.phone}</div>
                   </motion.div>
                 )}
 
                 {pStatus === "pending" && (
                   <motion.div {...fade}>
-                    <div className="text-center py-6 rounded-xl mb-5 border border-green-500/20" style={{ background: "rgba(0,166,81,0.06)" }}>
-                      <div className="h-14 w-14 rounded-full grid place-items-center mx-auto mb-3" style={{ background: "rgba(0,166,81,0.15)", border: "2px solid rgba(0,166,81,0.3)" }}>
-                        <Smartphone size={24} color="#00A651" />
+                    <div className="text-center py-6 rounded-2xl mb-5 border border-green-200 bg-green-50">
+                      <div className="h-14 w-14 rounded-full grid place-items-center mx-auto mb-3 bg-green-100 border-2 border-green-300">
+                        <Smartphone size={24} color="#16a34a" />
                       </div>
-                      <div className="font-bold text-white mb-1">Check Your Phone!</div>
-                      <div className="text-sm text-white/50 mb-4">Enter your M-Pesa PIN to complete payment</div>
-                      <div className="text-4xl font-bold font-display" style={{ color: countdown > 15 ? "#10b981" : "#f59e0b" }}>{countdown}s</div>
-                      <div className="text-xs text-white/30 mt-1">Time remaining</div>
+                      <div className="font-bold text-gray-900 mb-1">Check Your Phone!</div>
+                      <div className="text-sm text-gray-500 mb-4">Enter your M-Pesa PIN to complete payment</div>
+                      <div className="text-4xl font-bold font-display" style={{ color: countdown > 15 ? "#16a34a" : "#d97706" }}>{countdown}s</div>
+                      <div className="text-xs text-gray-400 mt-1">Time remaining</div>
                     </div>
-                    <div className="rounded-xl p-3 border border-white/5 mb-4" style={{ background: "rgba(255,255,255,0.03)" }}>
-                      <div className="text-xs text-white/30 text-center">Waiting for payment confirmation from {form.phone}</div>
+                    <div className="rounded-xl p-3 border border-border/60 bg-secondary/40 mb-4">
+                      <div className="text-xs text-muted-foreground text-center">Waiting for payment confirmation from {form.phone}</div>
                     </div>
                     <button onClick={() => { setErrMsg(""); setPStatus("idle"); }}
-                      className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm text-white/50 hover:text-white transition-all border border-white/8">
+                      className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm text-muted-foreground hover:text-foreground transition-all border border-border bg-secondary">
                       <RefreshCw size={14} /> Resend STK Push
                     </button>
                   </motion.div>
@@ -434,21 +430,21 @@ export function CheckoutPage({ selectedPackage }: { selectedPackage?: string }) 
                   <motion.div {...fade} className="text-center py-8">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}
                       className="h-16 w-16 rounded-full grid place-items-center mx-auto mb-4"
-                      style={{ background: "linear-gradient(135deg,#00A651,#059669)", boxShadow: "0 0 40px rgba(0,166,81,0.5)" }}>
+                      style={{ background: "linear-gradient(135deg,#00A651,#059669)", boxShadow: "0 0 40px rgba(0,166,81,0.4)" }}>
                       <CheckCircle2 size={30} color="white" />
                     </motion.div>
-                    <div className="font-bold text-white text-xl mb-1">Payment Received!</div>
-                    <div className="text-white/40 text-sm">Redirecting to confirmation…</div>
+                    <div className="font-bold text-foreground text-xl mb-1">Payment Received!</div>
+                    <div className="text-muted-foreground text-sm">Redirecting to confirmation…</div>
                   </motion.div>
                 )}
 
                 {pStatus === "failed" && (
                   <motion.div {...fade} className="text-center py-8">
-                    <div className="h-16 w-16 rounded-full grid place-items-center mx-auto mb-4" style={{ background: "rgba(239,68,68,0.15)", border: "2px solid rgba(239,68,68,0.3)" }}>
-                      <RefreshCw size={26} color="#f87171" />
+                    <div className="h-16 w-16 rounded-full grid place-items-center mx-auto mb-4 bg-red-50 border-2 border-red-200">
+                      <RefreshCw size={26} color="#ef4444" />
                     </div>
-                    <div className="font-bold text-white text-xl mb-2">Payment Failed</div>
-                    <div className="text-sm text-white/40 mb-6">{errMsg}</div>
+                    <div className="font-bold text-foreground text-xl mb-2">Payment Failed</div>
+                    <div className="text-sm text-muted-foreground mb-6">{errMsg}</div>
                     <button onClick={() => { setErrMsg(""); setPStatus("idle"); }}
                       className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all"
                       style={{ background: "linear-gradient(135deg,#00A651,#059669)", boxShadow: "0 8px 30px rgba(0,166,81,0.3)" }}>
